@@ -3,6 +3,7 @@ import { BookMarked, Swords, ArrowUpRight } from 'lucide-react';
 import { ConversationTree, AnswerControlAction } from '@/lib/types';
 import { EditorialMessage } from './EditorialMessage';
 import { getLinearPath, getBranchSiblingInfo } from '@/lib/storage/tree-manager';
+import { SpotlightCard } from '../ui/SpotlightCard';
 
 interface EditorialChatViewProps {
   conversation: ConversationTree | null;
@@ -100,16 +101,18 @@ export const EditorialChatView: React.FC<EditorialChatViewProps> = ({
 
             <div className="flex flex-col gap-2">
               {STARTER_CHIPS.map((item, idx) => (
-                <button
+                <SpotlightCard
                   key={idx}
                   onClick={() => onSelectPromptStarter(item.prompt)}
-                  className="w-full text-left p-3.5 px-4 bg-white/[0.02] hover:bg-white/[0.06] rounded-xl transition-all flex items-center justify-between group"
+                  className="cursor-pointer"
                 >
-                  <span className="text-[13.5px] text-velora-text/80 group-hover:text-velora-text transition-colors">
-                    {item.title}
-                  </span>
-                  <ArrowUpRight className="w-4 h-4 text-velora-textMuted/40 group-hover:text-velora-copper transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                </button>
+                  <div className="p-3.5 px-4 flex items-center justify-between group">
+                    <span className="text-[13.5px] text-velora-text/80 group-hover:text-velora-text transition-colors">
+                      {item.title}
+                    </span>
+                    <ArrowUpRight className="w-4 h-4 text-velora-textMuted/40 group-hover:text-velora-copper transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  </div>
+                </SpotlightCard>
               ))}
             </div>
           </div>

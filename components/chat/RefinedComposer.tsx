@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { ArrowUp, BookMarked, ChevronDown, GitBranch, X } from 'lucide-react';
 import { AVAILABLE_MODELS } from '@/lib/puter/ai';
+import { MagneticButton } from '../ui/MagneticButton';
 
 interface RefinedComposerProps {
   input: string;
@@ -149,16 +150,16 @@ export const RefinedComposer: React.FC<RefinedComposerProps> = ({
             </button>
           </div>
 
-          {/* Right: Circular Send Button */}
-          <button
+          {/* Right: Circular Send Button with Magnetic micro-interaction */}
+          <MagneticButton
             type="button"
             onClick={onSubmit}
             disabled={isLoading || !input.trim()}
-            className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-velora-copper hover:bg-velora-copperLight active:scale-95 text-white disabled:opacity-20 disabled:pointer-events-none transition-all shadow-md"
+            className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-velora-copper hover:bg-velora-copperLight active:scale-95 text-white disabled:opacity-20 disabled:pointer-events-none transition-colors shadow-md"
             aria-label="Send message"
           >
             <ArrowUp className="w-4 h-4 stroke-[2.5]" />
-          </button>
+          </MagneticButton>
         </div>
       </div>
     </div>
