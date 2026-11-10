@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #FAF8F5;
+    --foreground: #141518;
+    --card: #FFFFFF;
+    --card-foreground: #141518;
+    --primary: #141518;
+    --primary-foreground: #FAF8F5;
+    --muted: #EFECE6;
+    --muted-foreground: #6B7078;
+    --border: #E5E1D8;
+    --input: #E5E1D8;
+    --ring: #B37D4E;
+    --font-editorial: "Newsreader", "Georgia", "Cambria", serif;
+  }
+
+  .dark {
+    --background: #0B0C0E;
+    --foreground: #EDEDED;
+    --card: #121417;
+    --card-foreground: #EDEDED;
+    --primary: #FAF8F5;
+    --primary-foreground: #141518;
+    --muted: #1A1D21;
+    --muted-foreground: #8A909A;
+    --border: #23272C;
+    --input: #23272C;
+    --ring: #D4A373;
+    --font-editorial: "Newsreader", "Georgia", "Cambria", serif;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background-color: var(--background);
+  font-feature-settings: "rlig" 1, "calt" 1;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Editorial Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(140, 140, 140, 0.25);
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(140, 140, 140, 0.45);
+}
+
+/* Code Syntax Highlighting Theme - Editorial Monochrome */
+pre {
+  background-color: #0E1013 !important;
+  color: #DDE1E5 !important;
+  border: 1px solid #23272C;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.hljs-keyword, .hljs-selector-tag {
+  color: #D4A373;
+  font-weight: 600;
+}
+
+.hljs-string, .hljs-title {
+  color: #A3BE8C;
+}
+
+.hljs-comment {
+  color: #5C6370;
+  font-style: italic;
+}
+
+.hljs-number, .hljs-literal {
+  color: #E5C07B;
+}
+
+.hljs-function, .hljs-attr {
+  color: #61AFEF;
+}
+
+.hljs-variable, .hljs-params {
+  color: #E06C75;
+}
