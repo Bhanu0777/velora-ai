@@ -147,31 +147,36 @@ export const EditorialChatView: React.FC<EditorialChatViewProps> = ({
   const linearNodes = getLinearPath(conversation);
 
   return (
-    <div className="flex-1 overflow-y-auto">
-      {linearNodes.map((node) => {
-        const siblingInfo = getBranchSiblingInfo(conversation, node.id);
-        const isCurrentlyStreaming = isStreaming && streamingNodeId === node.id;
-        const isBookmarked = node.id in bookmarksMap;
-        const note = bookmarksMap[node.id];
+    <div className="flex-1 overflow-y-auto editorial-canvas-bg">
+      <div className="min-h-full flex flex-col justify-between">
+        <div>
+          {linearNodes.map((node) => {
+            const siblingInfo = getBranchSiblingInfo(conversation, node.id);
+            const isCurrentlyStreaming = isStreaming && streamingNodeId === node.id;
+            const isBookmarked = node.id in bookmarksMap;
+            const note = bookmarksMap[node.id];
 
-        return (
-          <EditorialMessage
-            key={node.id}
-            node={node}
-            siblingInfo={siblingInfo}
-            isStreaming={isCurrentlyStreaming}
-            onNavigateBranch={(newIndex) => onNavigateBranch(node.id, newIndex)}
-            onAnswerControl={(action, directive) => onAnswerControl(node.id, action, directive)}
-            onForkTurn={() => onForkTurn(node.id)}
-            onToggleBookmark={(msgId, content, model, noteText) =>
-              onToggleBookmark(msgId, content, model, noteText)
-            }
-            isBookmarked={isBookmarked}
-            bookmarkNote={note}
-          />
-        );
-      })}
-      <div ref={bottomRef} className="h-6" />
+            return (
+              <EditorialMessage
+                key={node.id}
+                node={node}
+                siblingInfo={siblingInfo}
+                isStreaming={isCurrentlyStreaming}
+                onNavigateBranch={(newIndex) => onNavigateBranch(node.id, newIndex)}
+                onAnswerControl={(action, directive) => onAnswerControl(node.id, action, directive)}
+                onForkTurn={() => onForkTurn(node.id)}
+                onToggleBookmark={(msgId, content, model, noteText) =>
+                  onToggleBookmark(msgId, content, model, noteText)
+                }
+                isBookmarked={isBookmarked}
+                bookmarkNote={note}
+              />
+            );
+          })}
+        </div>
+        <div ref={bottomRef} className="h-8" />
+      </div>
     </div>
   );
 };
+

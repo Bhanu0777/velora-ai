@@ -475,6 +475,7 @@ export default function VeloraApp() {
           onToggleMobileSidebar={() => setIsMobileSidebarOpen(true)}
           theme={theme}
           onToggleTheme={toggleTheme}
+          activeConversationTitle={currentConversation?.title}
         />
 
         {/* Viewport: Either Model Arena or Editorial Chat */}

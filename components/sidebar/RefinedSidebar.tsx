@@ -8,6 +8,7 @@ import {
   Download,
   Edit2,
   FolderSync,
+  GitBranch,
   Heart,
   Pin,
   Plus,
@@ -94,16 +95,22 @@ export const RefinedSidebar: React.FC<RefinedSidebarProps> = ({
     URL.revokeObjectURL(url);
   };
 
+  const getBranchCount = (conv: ConversationTree) => {
+    const nodeCount = Object.keys(conv.nodes).length;
+    return Math.max(1, Math.floor(nodeCount / 2));
+  };
+
   const renderConvItem = (conv: ConversationTree) => {
     const isActive = conv.id === activeId;
     const isEditing = editingId === conv.id;
+    const branchCount = getBranchCount(conv);
 
     return (
       <div
         key={conv.id}
-        className={`group relative flex items-center justify-between px-3 py-2 text-xs rounded-xs transition-colors cursor-pointer select-none ${
+        className={`group relative flex items-center justify-between px-3 py-2 text-xs rounded-xs transition-all cursor-pointer select-none mb-0.5 ${
           isActive
-            ? 'bg-velora-elevated text-velora-text font-medium border-l-2 border-velora-copper pl-2.5'
+            ? 'bg-velora-elevated text-velora-text font-medium border-l-2 border-velora-copper pl-2.5 shadow-sm'
             : 'text-velora-textMuted hover:bg-velora-elevated/40 hover:text-velora-text'
         }`}
         onClick={() => {
@@ -135,7 +142,15 @@ export const RefinedSidebar: React.FC<RefinedSidebarProps> = ({
               </button>
             </div>
           ) : (
-            <span className="block truncate font-serif text-[13px]">{conv.title}</span>
+            <div className="flex items-center gap-1.5">
+              <span className="truncate font-serif text-[13px]">{conv.title}</span>
+              {branchCount > 1 && (
+                <span className="text-[9px] font-mono text-velora-copper/70 flex items-center gap-0.5 px-1 py-0.2 bg-velora-copper/5 rounded-xs">
+                  <GitBranch className="w-2.5 h-2.5" />
+                  {branchCount}
+                </span>
+              )}
+            </div>
           )}
         </div>
 
@@ -204,7 +219,7 @@ export const RefinedSidebar: React.FC<RefinedSidebarProps> = ({
       {/* Mobile Backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-30 lg:hidden"
+          className="fixed inset-0 bg-black/75 backdrop-blur-sm z-30 lg:hidden"
           onClick={onCloseMobile}
         />
       )}
@@ -214,7 +229,7 @@ export const RefinedSidebar: React.FC<RefinedSidebarProps> = ({
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         } ${isCollapsed ? 'lg:w-16' : 'w-72'}`}
       >
-        {/* Brand & New Conversation */}
+        {/* Brand Header */}
         <div className="p-4 border-b border-velora-border flex flex-col gap-3">
           <div className="flex items-center justify-between">
             {!isCollapsed ? (
@@ -248,6 +263,7 @@ export const RefinedSidebar: React.FC<RefinedSidebarProps> = ({
             </div>
           </div>
 
+          {/* New Reflection Button — Refined Dark Aesthetic */}
           {!isCollapsed && (
             <>
               <button
@@ -255,13 +271,18 @@ export const RefinedSidebar: React.FC<RefinedSidebarProps> = ({
                   onNewConversation();
                   onCloseMobile();
                 }}
-                className="w-full flex items-center justify-center gap-2 py-2 px-3 text-xs uppercase tracking-wider font-mono bg-velora-text text-velora-bg hover:bg-white active:scale-[0.98] transition-all rounded-xs font-semibold shadow-sm"
+                className="w-full flex items-center justify-between py-2 px-3 text-xs uppercase tracking-wider font-mono bg-velora-elevated hover:bg-velora-elevated/80 text-velora-text border border-velora-border hover:border-velora-copper/50 active:scale-[0.98] transition-all rounded-xs font-semibold shadow-sm group"
               >
-                <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
-                <span>New Reflection</span>
+                <span className="flex items-center gap-2">
+                  <Plus className="w-3.5 h-3.5 text-velora-copper group-hover:rotate-90 transition-transform duration-200 stroke-[2.5]" />
+                  <span>New Reflection</span>
+                </span>
+                <span className="text-[10px] text-velora-textMuted/60 font-mono font-normal">
+                  ⌘N
+                </span>
               </button>
 
-              {/* Search bar */}
+              {/* Search Bar */}
               <div className="relative">
                 <Search className="w-3.5 h-3.5 text-velora-textMuted absolute left-2.5 top-1/2 -translate-y-1/2" />
                 <input
@@ -269,7 +290,7 @@ export const RefinedSidebar: React.FC<RefinedSidebarProps> = ({
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Filter reflections..."
-                  className="w-full bg-velora-elevated/50 border border-velora-border pl-8 pr-2.5 py-1.5 text-xs font-sans text-velora-text placeholder:text-velora-textMuted/50 outline-none rounded-xs focus:border-velora-copper"
+                  className="w-full bg-velora-elevated/40 border border-velora-border pl-8 pr-2.5 py-1.5 text-xs font-sans text-velora-text placeholder:text-velora-textMuted/40 outline-none rounded-xs focus:border-velora-copper"
                 />
               </div>
             </>
@@ -281,8 +302,8 @@ export const RefinedSidebar: React.FC<RefinedSidebarProps> = ({
                 onNewConversation();
                 onToggleCollapse();
               }}
-              className="w-8 h-8 mx-auto flex items-center justify-center bg-velora-text text-velora-bg rounded-xs hover:bg-white transition-colors"
-              title="New Reflection"
+              className="w-8 h-8 mx-auto flex items-center justify-center bg-velora-elevated border border-velora-copper/40 text-velora-copper rounded-xs hover:bg-velora-copper hover:text-white transition-colors"
+              title="New Reflection (⌘N)"
             >
               <Plus className="w-4 h-4" />
             </button>
@@ -314,7 +335,7 @@ export const RefinedSidebar: React.FC<RefinedSidebarProps> = ({
               </div>
             )}
 
-            {/* Recent Ledger */}
+            {/* Recent Chronicle */}
             <div>
               <div className="text-[10px] font-mono uppercase tracking-widest text-velora-textMuted px-2 mb-1">
                 Chronicle ({recentConvs.length})
@@ -322,7 +343,7 @@ export const RefinedSidebar: React.FC<RefinedSidebarProps> = ({
               <div className="space-y-0.5">
                 {recentConvs.map(renderConvItem)}
                 {recentConvs.length === 0 && pinnedConvs.length === 0 && favoriteConvs.length === 0 && (
-                  <div className="px-3 py-8 text-center text-velora-textMuted/60 text-xs font-serif italic">
+                  <div className="px-3 py-8 text-center text-velora-textMuted/50 text-xs font-serif italic">
                     The ledger is clean. Dispatch an inquiry to begin.
                   </div>
                 )}
@@ -333,7 +354,7 @@ export const RefinedSidebar: React.FC<RefinedSidebarProps> = ({
 
         {/* Footer / Puter Sync Status & Legal */}
         {!isCollapsed && (
-          <div className="p-3 border-t border-velora-border bg-velora-elevated/30 text-xs select-none">
+          <div className="p-3 border-t border-velora-border bg-velora-elevated/20 text-xs select-none">
             {/* Puter Cloud Sync State */}
             <div className="flex items-center justify-between text-[11px] font-mono text-velora-textMuted mb-2 px-1">
               <span className="flex items-center gap-1.5">
@@ -348,7 +369,7 @@ export const RefinedSidebar: React.FC<RefinedSidebarProps> = ({
             </div>
 
             {/* Legal Links */}
-            <div className="flex items-center justify-between text-[11px] font-sans text-velora-textMuted/80 px-1 pt-1.5 border-t border-velora-border/40">
+            <div className="flex items-center justify-between text-[11px] font-sans text-velora-textMuted/70 px-1 pt-1.5 border-t border-velora-border/40">
               <Link href="/privacy" className="hover:text-velora-text transition-colors">
                 Privacy
               </Link>

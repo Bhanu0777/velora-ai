@@ -85,7 +85,7 @@ export const RefinedComposer: React.FC<RefinedComposerProps> = ({
       {/* Main Composer Box */}
       <div
         ref={containerRef}
-        className="relative flex flex-col bg-velora-surface border border-velora-border rounded-xs transition-colors shadow-lg"
+        className="relative flex flex-col bg-velora-surface/95 backdrop-blur-md border border-velora-border hover:border-velora-borderLight rounded-xs transition-all shadow-2xl"
       >
         <textarea
           ref={textareaRef}
@@ -187,3 +187,4 @@ export const RefinedComposer: React.FC<RefinedComposerProps> = ({
     </div>
   );
 };
+

@@ -29,6 +29,7 @@ interface RefinedHeaderProps {
   onToggleMobileSidebar: () => void;
   theme: 'dark' | 'light';
   onToggleTheme: () => void;
+  activeConversationTitle?: string;
 }
 
 export const RefinedHeader: React.FC<RefinedHeaderProps> = ({
@@ -45,6 +46,7 @@ export const RefinedHeader: React.FC<RefinedHeaderProps> = ({
   onToggleMobileSidebar,
   theme,
   onToggleTheme,
+  activeConversationTitle,
 }) => {
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -53,9 +55,9 @@ export const RefinedHeader: React.FC<RefinedHeaderProps> = ({
     AVAILABLE_MODELS.find((m) => m.id === activeModel) || AVAILABLE_MODELS[0];
 
   return (
-    <header className="h-14 border-b border-velora-border bg-velora-surface/90 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between select-none z-20">
-      {/* Left: Mobile hamburger & Model Switcher */}
-      <div className="flex items-center gap-3">
+    <header className="h-14 border-b border-velora-border bg-velora-surface/95 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between select-none z-20">
+      {/* Left: Mobile hamburger & Active Title / Breadcrumb */}
+      <div className="flex items-center gap-3 min-w-0">
         <button
           onClick={onToggleMobileSidebar}
           className="lg:hidden text-velora-textMuted hover:text-velora-text p-1"
@@ -64,18 +66,29 @@ export const RefinedHeader: React.FC<RefinedHeaderProps> = ({
           <Menu className="w-5 h-5" />
         </button>
 
-        {/* Model Dropdown */}
+        {/* Conversation Breadcrumb */}
+        <div className="flex items-center gap-2 truncate">
+          <span className="text-[10px] font-mono uppercase text-velora-copper font-semibold tracking-wider hidden sm:inline">
+            Chronicle
+          </span>
+          <span className="text-velora-border hidden sm:inline">•</span>
+          <span className="font-serif text-[13.5px] text-velora-text truncate max-w-[200px] sm:max-w-xs md:max-w-md">
+            {activeConversationTitle || 'Workspace Overview'}
+          </span>
+        </div>
+      </div>
+
+      {/* Right Tools: Model Selector, Arena, Vault, Bookmarks, Theme, Puter */}
+      <div className="flex items-center gap-2">
+        {/* Model Selector Dropdown */}
         <div className="relative">
           <button
             onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
-            className="flex items-center gap-2 px-3 py-1.5 bg-velora-elevated hover:bg-velora-elevated/80 text-xs font-mono border border-velora-border hover:border-velora-copper/50 rounded-xs transition-colors text-velora-text"
+            className="flex items-center gap-2 px-2.5 py-1.5 bg-velora-elevated hover:bg-velora-elevated/80 text-xs font-mono border border-velora-border hover:border-velora-copper/50 rounded-xs transition-colors text-velora-text"
           >
-            <span className="w-2 h-2 bg-velora-sage rounded-none inline-block" />
-            <span className="font-semibold">{activeModelObj.name}</span>
-            <span className="text-velora-textMuted text-[10px] hidden sm:inline">
-              ({activeModelObj.provider})
-            </span>
-            <ChevronDown className="w-3.5 h-3.5 text-velora-textMuted ml-1" />
+            <span className="w-1.5 h-1.5 bg-velora-sage rounded-none inline-block" />
+            <span className="font-medium text-[11px]">{activeModelObj.name}</span>
+            <ChevronDown className="w-3 h-3 text-velora-textMuted" />
           </button>
 
           {isModelDropdownOpen && (
@@ -84,9 +97,9 @@ export const RefinedHeader: React.FC<RefinedHeaderProps> = ({
                 className="fixed inset-0 z-40"
                 onClick={() => setIsModelDropdownOpen(false)}
               />
-              <div className="absolute left-0 mt-1.5 w-64 bg-velora-elevated border border-velora-border shadow-2xl rounded-xs z-50 py-1 divide-y divide-velora-border/60 animate-in fade-in-0 zoom-in-95 duration-150">
+              <div className="absolute right-0 mt-1.5 w-64 bg-velora-elevated border border-velora-border shadow-2xl rounded-xs z-50 py-1 divide-y divide-velora-border/60 animate-in fade-in-0 zoom-in-95 duration-150">
                 <div className="px-3 py-1.5 text-[9px] font-mono uppercase tracking-widest text-velora-textMuted">
-                  Select Engine
+                  Switch Active Engine
                 </div>
                 {AVAILABLE_MODELS.map((model) => (
                   <div
@@ -118,51 +131,48 @@ export const RefinedHeader: React.FC<RefinedHeaderProps> = ({
             </>
           )}
         </div>
-      </div>
 
-      {/* Right Tools: Arena, Vault, Bookmarks, Manifesto, Theme, Puter */}
-      <div className="flex items-center gap-2">
         {/* Model Arena */}
         <button
           onClick={onToggleArena}
-          className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono rounded-xs border transition-all ${
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-mono rounded-xs border transition-all ${
             isArenaOpen
-              ? 'bg-velora-copper text-white border-velora-copper font-semibold shadow-sm'
+              ? 'bg-velora-copper text-white border-velora-copper font-medium shadow-sm'
               : 'bg-velora-surface hover:bg-velora-elevated text-velora-text border-velora-border hover:border-velora-copper/50'
           }`}
           title="Toggle Model Arena Duel"
         >
           <Swords className={`w-3.5 h-3.5 ${isArenaOpen ? 'text-white' : 'text-velora-copper'}`} />
-          <span className="hidden sm:inline">Arena</span>
+          <span className="hidden sm:inline text-[11px]">Arena</span>
         </button>
 
         {/* Prompt Vault */}
         <button
           onClick={onOpenVault}
-          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono bg-velora-surface hover:bg-velora-elevated text-velora-text border border-velora-border hover:border-velora-copper/50 rounded-xs transition-colors"
+          className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-mono bg-velora-surface hover:bg-velora-elevated text-velora-text border border-velora-border hover:border-velora-copper/50 rounded-xs transition-colors"
           title="Open Prompt Vault (⌘V)"
         >
           <BookMarked className="w-3.5 h-3.5 text-velora-copper" />
-          <span className="hidden md:inline">Vault</span>
+          <span className="text-[11px]">Vault</span>
         </button>
 
         {/* Bookmarks */}
         <button
           onClick={onOpenBookmarks}
-          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono bg-velora-surface hover:bg-velora-elevated text-velora-text border border-velora-border hover:border-velora-copper/50 rounded-xs transition-colors"
+          className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-mono bg-velora-surface hover:bg-velora-elevated text-velora-text border border-velora-border hover:border-velora-copper/50 rounded-xs transition-colors"
           title="Saved Reflections (⌘B)"
         >
           <BookmarkIcon className="w-3.5 h-3.5 text-velora-copper" />
-          <span className="hidden md:inline">Bookmarks</span>
+          <span className="text-[11px]">Bookmarks</span>
         </button>
 
         {/* Manifesto / Product Tour */}
         <button
           onClick={onOpenLanding}
           className="p-1.5 text-velora-textMuted hover:text-velora-text hover:bg-velora-elevated border border-transparent hover:border-velora-border rounded-xs transition-colors"
-          title="Product Manifesto & Tour"
+          title="Product Manifesto"
         >
-          <Compass className="w-4 h-4 text-velora-sage" />
+          <Compass className="w-3.5 h-3.5 text-velora-sage" />
         </button>
 
         {/* Theme Toggle */}
@@ -185,10 +195,10 @@ export const RefinedHeader: React.FC<RefinedHeaderProps> = ({
             <div>
               <button
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 bg-velora-elevated hover:bg-velora-elevated/80 border border-velora-border text-xs font-mono rounded-xs transition-colors text-velora-text"
+                className="flex items-center gap-1.5 px-2 py-1.5 bg-velora-elevated hover:bg-velora-elevated/80 border border-velora-border text-xs font-mono rounded-xs transition-colors text-velora-text"
               >
                 <User className="w-3.5 h-3.5 text-velora-copper" />
-                <span className="max-w-[90px] truncate">{user.username}</span>
+                <span className="max-w-[85px] truncate text-[11px]">{user.username}</span>
                 <ChevronDown className="w-3 h-3 text-velora-textMuted" />
               </button>
 
@@ -221,10 +231,10 @@ export const RefinedHeader: React.FC<RefinedHeaderProps> = ({
           ) : (
             <button
               onClick={onSignIn}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-velora-text text-velora-bg hover:bg-white text-xs font-mono font-semibold rounded-xs transition-all shadow-sm active:scale-[0.98]"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-velora-copper hover:bg-velora-copperLight active:scale-[0.98] text-white text-xs font-mono font-medium rounded-xs transition-all shadow-sm"
             >
               <LogIn className="w-3.5 h-3.5" />
-              <span>Connect Puter</span>
+              <span className="text-[11px]">Connect Puter</span>
             </button>
           )}
         </div>

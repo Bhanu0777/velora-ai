@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Bookmark, Check, Copy, GitBranch, Share2 } from 'lucide-react';
+import { Bookmark, Check, Copy, GitBranch, Quote, Sparkles } from 'lucide-react';
 import { MessageNode, AnswerControlAction } from '@/lib/types';
 import { CodeBlock } from './CodeBlock';
 import { BranchConnectorHUD } from './BranchConnectorHUD';
@@ -63,35 +63,42 @@ export const EditorialMessage: React.FC<EditorialMessageProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`relative py-7 px-4 sm:px-8 border-b border-velora-border/60 transition-colors ${
+      className={`relative py-8 px-4 sm:px-8 border-b border-velora-border/60 transition-colors ${
         isUser
-          ? 'bg-velora-surface/40'
+          ? 'bg-velora-surface/30'
           : 'bg-transparent'
       }`}
     >
       <div className="max-w-4xl mx-auto">
         {/* Turn Metadata Header */}
-        <div className="flex items-center justify-between pb-3 mb-3 select-none">
-          <div className="flex items-center gap-2.5">
+        <div className="flex items-center justify-between pb-3.5 mb-3 select-none">
+          <div className="flex items-center gap-3">
             {isUser ? (
-              <span className="font-mono text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 bg-velora-elevated text-velora-sage border border-velora-border rounded-xs">
-                Inquiry
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-[9px] uppercase tracking-widest font-bold px-2 py-0.5 bg-velora-elevated text-velora-sage border border-velora-border rounded-xs">
+                  Inquiry
+                </span>
+                <span className="text-velora-textMuted/60 text-[10px] font-mono">
+                  {new Date(node.createdAt).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </span>
+              </div>
             ) : (
               <div className="flex items-center gap-2">
-                <span className="font-mono text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 bg-velora-elevated text-velora-copperLight border border-velora-border rounded-xs flex items-center gap-1.5">
+                <span className="font-mono text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 bg-velora-elevated text-velora-copperLight border border-velora-border rounded-xs flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 bg-velora-copper inline-block" />
                   {node.model || 'Model Reflection'}
                 </span>
+                <span className="text-velora-textMuted/60 text-[10px] font-mono">
+                  {new Date(node.createdAt).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </span>
               </div>
             )}
-
-            <span className="text-velora-textMuted/50 text-[11px] font-mono">
-              {new Date(node.createdAt).toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-            </span>
           </div>
 
           {/* Sibling Branch Indicator (if more than 1 sibling) */}
@@ -105,13 +112,13 @@ export const EditorialMessage: React.FC<EditorialMessageProps> = ({
         {/* Message Content Body */}
         <div className="text-[15px] leading-[1.8] font-sans text-velora-text selection:bg-velora-copper selection:text-white">
           {isUser ? (
-            <div className="p-4 bg-velora-elevated/40 border border-velora-border/80 rounded-xs">
-              <p className="whitespace-pre-wrap font-medium text-velora-text">
+            <div className="relative pl-4 border-l-2 border-velora-copper/70 py-1">
+              <p className="whitespace-pre-wrap font-serif text-[17px] leading-relaxed text-velora-text">
                 {node.content}
               </p>
             </div>
           ) : (
-            <div className="prose prose-neutral dark:prose-invert max-w-none text-[15px] leading-[1.8] font-sans">
+            <div className="prose prose-neutral dark:prose-invert max-w-none text-[15px] leading-[1.85] font-sans">
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 components={{
@@ -126,7 +133,7 @@ export const EditorialMessage: React.FC<EditorialMessageProps> = ({
                     }
                     return (
                       <code
-                        className="px-1.5 py-0.5 mx-0.5 text-xs font-mono bg-velora-surface text-velora-copperLight rounded-xs border border-velora-border"
+                        className="px-1.5 py-0.5 mx-0.5 text-xs font-mono bg-velora-elevated text-velora-copperLight rounded-xs border border-velora-border"
                         {...props}
                       >
                         {children}
@@ -147,7 +154,7 @@ export const EditorialMessage: React.FC<EditorialMessageProps> = ({
 
         {/* Turn Utility Bar */}
         <div className="flex items-center justify-between pt-4 mt-3 text-[11px] font-mono text-velora-textMuted border-t border-velora-border/40 select-none">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             {/* Copy button */}
             <button
               onClick={handleCopy}
@@ -194,10 +201,10 @@ export const EditorialMessage: React.FC<EditorialMessageProps> = ({
             </button>
           </div>
 
-          {/* Bookmarked user note badge */}
+          {/* Bookmarked user note preview */}
           {!isUser && isBookmarked && bookmarkNote && (
             <div className="text-[11px] text-velora-copper/90 italic truncate max-w-sm font-serif pl-3 border-l border-velora-border">
-              "{bookmarkNote}"
+              Note: "{bookmarkNote}"
             </div>
           )}
         </div>

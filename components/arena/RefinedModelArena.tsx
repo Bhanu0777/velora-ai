@@ -270,3 +270,4 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
     </div>
   );
 };
+

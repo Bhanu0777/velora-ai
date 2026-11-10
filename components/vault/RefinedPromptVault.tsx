@@ -363,3 +363,4 @@ export const RefinedPromptVault: React.FC<RefinedPromptVaultProps> = ({
     </Dialog.Root>
   );
 };
+

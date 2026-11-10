@@ -120,3 +120,4 @@ export const LandingHeroModal: React.FC<LandingHeroModalProps> = ({
     </Dialog.Root>
   );
 };
+

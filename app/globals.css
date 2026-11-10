@@ -47,6 +47,19 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Subtle Architectural Dot Matrix Background */
+.editorial-canvas-bg {
+  background-color: #111310;
+  background-image: radial-gradient(rgba(52, 56, 48, 0.45) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+.light .editorial-canvas-bg {
+  background-color: #F7F5F0;
+  background-image: radial-gradient(rgba(215, 211, 199, 0.6) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
 /* Subtle Architectural Scrollbar */
 ::-webkit-scrollbar {
   width: 5px;
@@ -58,7 +71,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(166, 167, 157, 0.2);
+  background: rgba(166, 167, 157, 0.18);
   border-radius: 2px;
 }
 
@@ -68,7 +81,7 @@ body {
 
 /* Code Syntax Highlighting — Editorial Deep Theme */
 pre {
-  background-color: #171A15 !important;
+  background-color: #161814 !important;
   color: #F1EFE6 !important;
   border: 1px solid #343830 !important;
 }
@@ -101,12 +114,4 @@ code {
 
 .hljs-variable, .hljs-params {
   color: #E29B72;
-}
-
-/* Custom subtle noise texture overlay effect */
-.editorial-grid-pattern {
-  background-size: 32px 32px;
-  background-image: 
-    linear-gradient(to right, rgba(52, 56, 48, 0.2) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(52, 56, 48, 0.2) 1px, transparent 1px);
 }

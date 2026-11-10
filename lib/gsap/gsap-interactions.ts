@@ -64,3 +64,4 @@ export function animateComposerFocus(element: HTMLElement | null, isFocused: boo
     ease: 'power1.out',
   });
 }
+
