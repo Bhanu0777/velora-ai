@@ -128,11 +128,11 @@ export function appendTurnToActiveLeaf(
 }
 
 /**
- * Creates a branch directly from a specific parent node
+ * Creates a branch directly from a specific parent node (or root if null)
  */
 export function branchFromNode(
   tree: ConversationTree,
-  targetParentNodeId: string,
+  targetParentNodeId: string | null,
   userText: string,
   model: string
 ): { updatedTree: ConversationTree; userNodeId: string; assistantNodeId: string } {
@@ -159,7 +159,7 @@ export function branchFromNode(
     createdAt: now,
   };
 
-  const targetParent = tree.nodes[targetParentNodeId];
+  const targetParent = targetParentNodeId ? tree.nodes[targetParentNodeId] : null;
   const updatedParent = targetParent
     ? { ...targetParent, childIds: [...targetParent.childIds, userNodeId] }
     : undefined;
@@ -171,7 +171,7 @@ export function branchFromNode(
       activeLeafId: assistantNodeId,
       nodes: {
         ...tree.nodes,
-        ...(updatedParent ? { [targetParentNodeId]: updatedParent } : {}),
+        ...(updatedParent && targetParentNodeId ? { [targetParentNodeId]: updatedParent } : {}),
         [userNodeId]: userNode,
         [assistantNodeId]: assistantNode,
       },

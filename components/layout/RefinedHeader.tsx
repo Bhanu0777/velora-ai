@@ -55,7 +55,7 @@ export const RefinedHeader: React.FC<RefinedHeaderProps> = ({
     AVAILABLE_MODELS.find((m) => m.id === activeModel) || AVAILABLE_MODELS[0];
 
   return (
-    <header className="h-14 border-b border-white/[0.05] bg-[#090A0C]/80 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between select-none z-20">
+    <header className="h-14 border-b border-border bg-background/80 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between select-none z-20">
       {/* Left: Mobile hamburger & Active Title */}
       <div className="flex items-center gap-3 min-w-0">
         <button

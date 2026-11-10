@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Bookmark as BookmarkIcon, ExternalLink, Search, Trash2, X, Edit3 } from 'lucide-react';
 import { Bookmark } from '@/lib/types';
@@ -24,6 +24,15 @@ export const RefinedBookmarks: React.FC<RefinedBookmarksProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingNote, setEditingNote] = useState('');
+
+  // Reset search and any open note editor when drawer closes
+  useEffect(() => {
+    if (!isOpen) {
+      setSearchQuery('');
+      setEditingId(null);
+      setEditingNote('');
+    }
+  }, [isOpen]);
 
   const filteredBookmarks = bookmarks.filter((b) => {
     const q = searchQuery.toLowerCase();

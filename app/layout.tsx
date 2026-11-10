@@ -54,7 +54,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="font-sans antialiased bg-background text-foreground min-h-screen selection:bg-editorial-bronze selection:text-white">
+      <body className="font-sans antialiased bg-background text-foreground min-h-screen selection:bg-velora-copper/30 selection:text-white">
         {children}
       </body>
     </html>

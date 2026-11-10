@@ -21,10 +21,10 @@ export const PWAInstallPrompt: React.FC = () => {
   const handleInstall = async () => {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      setDeferredPrompt(null);
-    }
+    await deferredPrompt.userChoice;
+    // Always clear the deferred prompt after the native dialog is shown —
+    // it can only be used once regardless of the user's choice.
+    setDeferredPrompt(null);
   };
 
   if (!deferredPrompt || isDismissed) return null;

@@ -1,21 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeHighlight from 'rehype-highlight';
 import {
   Bookmark,
   Check,
   Copy,
   GitBranch,
-  Sparkles,
-  Zap,
-  BookOpen,
-  ListFilter,
-  Compass,
-  AlertCircle,
+  RotateCcw,
 } from 'lucide-react';
 import { MessageNode, AnswerControlAction } from '@/lib/types';
 import { CodeBlock } from './CodeBlock';
 import { BranchConnectorHUD } from './BranchConnectorHUD';
+import { RefinedAnswerControls } from './RefinedAnswerControls';
 import { BookmarkNoteModal } from '../bookmarks/BookmarkNoteModal';
 import { animateMessageEntrance } from '@/lib/gsap/gsap-interactions';
 
@@ -29,48 +26,11 @@ interface EditorialMessageProps {
   onNavigateBranch: (newIndex: number) => void;
   onAnswerControl: (action: AnswerControlAction, directive: string) => void;
   onForkTurn: (nodeId: string) => void;
+  onRegenerate?: (nodeId: string) => void;
   onToggleBookmark: (messageId: string, content: string, model: string, note?: string) => void;
   isBookmarked: boolean;
   bookmarkNote?: string;
 }
-
-const ANSWER_CONTROLS: Array<{
-  id: AnswerControlAction;
-  label: string;
-  directive: string;
-  icon: React.ComponentType<{ className?: string }>;
-}> = [
-  {
-    id: 'explain-simply',
-    label: 'Explain Simply',
-    directive: 'Explain the preceding response in simple, crystal-clear terms with minimal technical jargon, preserving core insights.',
-    icon: Zap,
-  },
-  {
-    id: 'give-examples',
-    label: 'Give Examples',
-    directive: 'Provide concrete, real-world examples and code/scenario implementations directly illustrating the preceding points.',
-    icon: BookOpen,
-  },
-  {
-    id: 'summarize',
-    label: 'Summarize',
-    directive: 'Distill the preceding analysis into high-density executive bullet points and key takeaways.',
-    icon: ListFilter,
-  },
-  {
-    id: 'go-deeper',
-    label: 'Go Deeper',
-    directive: 'Explore the underlying mechanisms, second-order systemic effects, and advanced technical trade-offs of this answer.',
-    icon: Compass,
-  },
-  {
-    id: 'challenge',
-    label: 'Challenge Answer',
-    directive: 'Act as an adversarial critic. Challenge the assumptions, expose potential failure modes, and present counter-theses to this answer.',
-    icon: AlertCircle,
-  },
-];
 
 export const EditorialMessage: React.FC<EditorialMessageProps> = ({
   node,
@@ -79,6 +39,7 @@ export const EditorialMessage: React.FC<EditorialMessageProps> = ({
   onNavigateBranch,
   onAnswerControl,
   onForkTurn,
+  onRegenerate,
   onToggleBookmark,
   isBookmarked,
   bookmarkNote,
@@ -106,8 +67,23 @@ export const EditorialMessage: React.FC<EditorialMessageProps> = ({
   // 1. User Message (Clean, fluid right-aligned chat bubble, NO boxy wireframes)
   if (isUser) {
     return (
-      <div ref={containerRef} className="py-4 px-4 sm:px-6 max-w-3xl mx-auto flex justify-end group">
+      <div
+        id={`msg-${node.id}`}
+        ref={containerRef}
+        className="py-4 px-4 sm:px-6 max-w-3xl mx-auto flex justify-end group scroll-mt-20"
+      >
         <div className="flex flex-col items-end max-w-xl">
+          {/* Branch switcher if alternative user turns exist */}
+          {siblingInfo.total > 1 && (
+            <div className="mb-1.5 flex items-center justify-end">
+              <BranchConnectorHUD
+                currentIndex={siblingInfo.currentIndex}
+                total={siblingInfo.total}
+                onNavigate={onNavigateBranch}
+              />
+            </div>
+          )}
+
           <div className="bg-[#1C1F26] text-velora-text text-[15px] leading-relaxed px-5 py-3 rounded-2xl rounded-tr-sm shadow-sm select-text">
             <p className="whitespace-pre-wrap">{node.content}</p>
           </div>
@@ -136,7 +112,11 @@ export const EditorialMessage: React.FC<EditorialMessageProps> = ({
 
   // 2. Assistant Message (Flowing editorial prose, NO boxes, NO heavy borders)
   return (
-    <div ref={containerRef} className="py-6 px-4 sm:px-6 max-w-3xl mx-auto group">
+    <div
+      id={`msg-${node.id}`}
+      ref={containerRef}
+      className="py-6 px-4 sm:px-6 max-w-3xl mx-auto group scroll-mt-20"
+    >
       {/* Header bar: Model tag & Fork switcher */}
       <div className="flex items-center justify-between pb-2 mb-3 text-xs select-none">
         <div className="flex items-center gap-2">
@@ -165,15 +145,30 @@ export const EditorialMessage: React.FC<EditorialMessageProps> = ({
       <div className="prose prose-neutral dark:prose-invert max-w-none text-[15.5px] leading-[1.8] font-sans text-velora-text prose-p:my-3 prose-headings:font-serif prose-headings:text-velora-text prose-h3:text-lg prose-h3:font-normal prose-h3:mt-6 prose-h3:mb-2 prose-ul:my-2 prose-li:my-1 prose-hr:border-white/[0.08] selection:bg-velora-copper/30">
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
+          rehypePlugins={[rehypeHighlight]}
           components={{
+            pre({ children }: any) {
+              return <div className="not-prose">{children}</div>;
+            },
             code({ node, inline, className, children, ...props }: any) {
               const match = /language-(\w+)/.exec(className || '');
-              const codeString = String(children).replace(/\n$/, '');
               if (!inline && match) {
-                return <CodeBlock language={match[1]} value={codeString} />;
+                return (
+                  <CodeBlock language={match[1]}>
+                    <code className={className} {...props}>
+                      {children}
+                    </code>
+                  </CodeBlock>
+                );
               }
               if (!inline) {
-                return <CodeBlock value={codeString} />;
+                return (
+                  <CodeBlock>
+                    <code className={className} {...props}>
+                      {children}
+                    </code>
+                  </CodeBlock>
+                );
               }
               return (
                 <code
@@ -203,23 +198,7 @@ export const EditorialMessage: React.FC<EditorialMessageProps> = ({
 
       {/* Modern Aceternity-inspired answer refinement pills */}
       {!isStreaming && node.content && (
-        <div className="mt-5 pt-3 border-t border-white/[0.05] select-none">
-          <div className="flex flex-wrap items-center gap-2">
-            {ANSWER_CONTROLS.map((ctrl) => {
-              const Icon = ctrl.icon;
-              return (
-                <button
-                  key={ctrl.id}
-                  onClick={() => onAnswerControl(ctrl.id, ctrl.directive)}
-                  className="group/pill inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs text-velora-textMuted hover:text-velora-text bg-white/[0.03] hover:bg-white/[0.08] hover:border-velora-copper/30 border border-white/[0.04] rounded-full transition-all duration-150 active:scale-[0.97]"
-                >
-                  <Icon className="w-3 h-3 text-velora-copper opacity-70 group-hover/pill:opacity-100 transition-opacity" />
-                  <span>{ctrl.label}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <RefinedAnswerControls onSelectAction={onAnswerControl} />
       )}
 
       {/* Subtle action controls on hover */}
@@ -254,6 +233,17 @@ export const EditorialMessage: React.FC<EditorialMessageProps> = ({
           <GitBranch className="w-3.5 h-3.5" />
           <span className="text-[11px]">Fork Branch</span>
         </button>
+
+        {onRegenerate && (
+          <button
+            onClick={() => onRegenerate(node.id)}
+            className="flex items-center gap-1 px-2.5 py-1 text-xs hover:text-velora-copper bg-white/[0.02] hover:bg-white/[0.06] rounded-full transition-colors"
+            title="Generate alternative response with active model"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span className="text-[11px]">Regenerate</span>
+          </button>
+        )}
       </div>
 
       {/* Bookmark note editing dialog */}
@@ -262,6 +252,9 @@ export const EditorialMessage: React.FC<EditorialMessageProps> = ({
         onClose={() => setIsNoteModalOpen(false)}
         onSave={(note) => {
           onToggleBookmark(node.id, node.content, node.model || 'AI Model', note);
+        }}
+        onRemove={() => {
+          onToggleBookmark(node.id, node.content, node.model || 'AI Model', undefined);
         }}
         initialNote={bookmarkNote}
         isBookmarked={isBookmarked}

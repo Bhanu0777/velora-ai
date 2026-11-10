@@ -41,40 +41,51 @@ declare global {
 
 let loadPromise: Promise<boolean> | null = null;
 
-export function ensurePuterLoaded(): Promise<boolean> {
+export function ensurePuterLoaded(timeoutMs = 1500): Promise<boolean> {
   if (typeof window === 'undefined') return Promise.resolve(false);
   if (window.puter) return Promise.resolve(true);
 
   if (loadPromise) return loadPromise;
 
   loadPromise = new Promise((resolve) => {
-    // Check if script tag is already in DOM
-    const existing = document.querySelector('script[src*="js.puter.com"]');
-    if (existing) {
-      const interval = setInterval(() => {
-        if (window.puter) {
-          clearInterval(interval);
-          resolve(true);
-        }
-      }, 50);
-      setTimeout(() => {
-        clearInterval(interval);
-        resolve(Boolean(window.puter));
-      }, 5000);
+    if (window.puter) {
+      resolve(true);
       return;
     }
 
-    const script = document.createElement('script');
-    script.src = 'https://js.puter.com/v2/';
-    script.async = true;
-    script.onload = () => {
-      resolve(Boolean(window.puter));
-    };
-    script.onerror = () => {
-      console.warn('Puter.js script failed to load from CDN. Falling back to local offline mode.');
-      resolve(false);
-    };
-    document.head.appendChild(script);
+    const interval = setInterval(() => {
+      if (window.puter) {
+        clearInterval(interval);
+        resolve(true);
+      }
+    }, 50);
+
+    const timer = setTimeout(() => {
+      clearInterval(interval);
+      const success = Boolean(window.puter);
+      if (!success) loadPromise = null;
+      resolve(success);
+    }, timeoutMs);
+
+    // If script tag is not in DOM yet, inject it
+    if (!document.querySelector('script[src*="js.puter.com"]')) {
+      const script = document.createElement('script');
+      script.src = 'https://js.puter.com/v2/';
+      script.async = true;
+      script.onload = () => {
+        clearInterval(interval);
+        clearTimeout(timer);
+        resolve(Boolean(window.puter));
+      };
+      script.onerror = () => {
+        clearInterval(interval);
+        clearTimeout(timer);
+        console.warn('Puter.js script failed to load from CDN. Falling back to local offline mode.');
+        loadPromise = null;
+        resolve(false);
+      };
+      document.head.appendChild(script);
+    }
   });
 
   return loadPromise;

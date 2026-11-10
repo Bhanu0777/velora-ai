@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { Bookmark, X } from 'lucide-react';
+import { Bookmark, Trash2, X } from 'lucide-react';
 
 interface BookmarkNoteModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (note: string) => void;
+  onRemove?: () => void;
   initialNote?: string;
   isBookmarked: boolean;
 }
@@ -14,10 +15,18 @@ export const BookmarkNoteModal: React.FC<BookmarkNoteModalProps> = ({
   isOpen,
   onClose,
   onSave,
+  onRemove,
   initialNote = '',
   isBookmarked,
 }) => {
   const [note, setNote] = useState(initialNote);
+
+  // Sync note state whenever the modal opens or the initial note changes
+  useEffect(() => {
+    if (isOpen) {
+      setNote(initialNote ?? '');
+    }
+  }, [isOpen, initialNote]);
 
   const handleSave = () => {
     onSave(note.trim());
@@ -57,19 +66,32 @@ export const BookmarkNoteModal: React.FC<BookmarkNoteModalProps> = ({
             />
           </div>
 
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/[0.06]">
-            <button
-              onClick={onClose}
-              className="px-3 py-1.5 text-xs text-velora-textMuted hover:text-velora-text rounded-full transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSave}
-              className="px-4 py-1.5 text-xs font-medium bg-velora-copper hover:bg-velora-copperLight text-white rounded-full transition-all shadow-sm active:scale-95"
-            >
-              Save Bookmark
-            </button>
+          <div className="flex items-center justify-between pt-2 border-t border-white/[0.06]">
+            <div>
+              {isBookmarked && onRemove && (
+                <button
+                  onClick={() => { onRemove(); onClose(); }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-red-400 hover:text-red-300 rounded-full transition-colors"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Remove Bookmark</span>
+                </button>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={onClose}
+                className="px-3 py-1.5 text-xs text-velora-textMuted hover:text-velora-text rounded-full transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                className="px-4 py-1.5 text-xs font-medium bg-velora-copper hover:bg-velora-copperLight text-white rounded-full transition-all shadow-sm active:scale-95"
+              >
+                Save Bookmark
+              </button>
+            </div>
           </div>
         </Dialog.Content>
       </Dialog.Portal>

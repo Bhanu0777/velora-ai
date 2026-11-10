@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { ArrowRight, Check, ChevronDown, Copy, Swords, Zap, X } from 'lucide-react';
+import rehypeHighlight from 'rehype-highlight';
+import { ArrowRight, Check, ChevronDown, Copy, Square, Swords, Zap, X } from 'lucide-react';
 import { AVAILABLE_MODELS, streamPuterChat } from '@/lib/puter/ai';
 import { CodeBlock } from '../chat/CodeBlock';
 import { animateArenaReveal } from '@/lib/gsap/gsap-interactions';
@@ -21,16 +22,31 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
   const [isStreaming, setIsStreaming] = useState(false);
   const [timeA, setTimeA] = useState<number | null>(null);
   const [timeB, setTimeB] = useState<number | null>(null);
+  const [copiedA, setCopiedA] = useState(false);
+  const [copiedB, setCopiedB] = useState(false);
 
   const leftPanelRef = useRef<HTMLDivElement>(null);
   const rightPanelRef = useRef<HTMLDivElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     animateArenaReveal(leftPanelRef.current, rightPanelRef.current);
+    return () => {
+      abortRef.current?.abort();
+    };
   }, []);
+
+  const handleStopDuel = () => {
+    abortRef.current?.abort();
+    setIsStreaming(false);
+  };
 
   const handleRunDuel = async () => {
     if (!prompt.trim() || isStreaming) return;
+
+    abortRef.current?.abort();
+    const ac = new AbortController();
+    abortRef.current = ac;
 
     setIsStreaming(true);
     setResponseA('');
@@ -44,6 +60,7 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
     const taskA = streamPuterChat({
       messages: [{ role: 'user', content: prompt.trim() }],
       model: modelA,
+      signal: ac.signal,
       onChunk: (chunk) => setResponseA((prev) => prev + chunk),
     }).then((res) => {
       setTimeA(Date.now() - startA);
@@ -53,6 +70,7 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
     const taskB = streamPuterChat({
       messages: [{ role: 'user', content: prompt.trim() }],
       model: modelB,
+      signal: ac.signal,
       onChunk: (chunk) => setResponseB((prev) => prev + chunk),
     }).then((res) => {
       setTimeB(Date.now() - startB);
@@ -93,7 +111,10 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
         </div>
 
         <button
-          onClick={onClose}
+          onClick={() => {
+            abortRef.current?.abort();
+            onClose();
+          }}
           className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-velora-textMuted hover:text-velora-text bg-white/[0.03] hover:bg-white/[0.06] rounded-full transition-colors"
         >
           <X className="w-3.5 h-3.5" />
@@ -136,16 +157,33 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
             {responseA ? (
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeHighlight]}
                 components={{
+                  pre({ children }: any) {
+                    return <div className="not-prose">{children}</div>;
+                  },
                   code({ node, inline, className, children, ...props }: any) {
                     const match = /language-(\w+)/.exec(className || '');
-                    const codeString = String(children).replace(/\n$/, '');
                     if (!inline && match) {
-                      return <CodeBlock language={match[1]} value={codeString} />;
+                      return (
+                        <CodeBlock language={match[1]}>
+                          <code className={className} {...props}>
+                            {children}
+                          </code>
+                        </CodeBlock>
+                      );
                     }
-                    if (!inline) return <CodeBlock value={codeString} />;
+                    if (!inline) {
+                      return (
+                        <CodeBlock>
+                          <code className={className} {...props}>
+                            {children}
+                          </code>
+                        </CodeBlock>
+                      );
+                    }
                     return (
-                      <code className="px-1.5 py-0.5 text-xs font-mono bg-white/[0.06] text-velora-copperLight rounded-md">
+                      <code className="px-1.5 py-0.5 text-xs font-mono bg-white/[0.06] text-velora-copperLight rounded-md" {...props}>
                         {children}
                       </code>
                     );
@@ -162,7 +200,20 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
           </div>
 
           {responseA && !isStreaming && (
-            <div className="pt-3.5 border-t border-white/[0.05] mt-3 flex justify-end">
+            <div className="pt-3.5 border-t border-white/[0.05] mt-3 flex items-center justify-between">
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(responseA);
+                  setCopiedA(true);
+                  setTimeout(() => setCopiedA(false), 2000);
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-velora-textMuted hover:text-velora-text bg-white/[0.03] hover:bg-white/[0.06] rounded-full transition-colors"
+                title="Copy Model A response"
+              >
+                {copiedA ? <Check className="w-3.5 h-3.5 text-velora-sage" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copiedA ? 'Copied' : 'Copy'}</span>
+              </button>
+
               <button
                 onClick={() => onAdoptWinner(modelA, responseA, prompt)}
                 className="flex items-center gap-2 px-4 py-1.5 text-xs font-medium bg-velora-copper hover:bg-velora-copperLight text-white rounded-full transition-all shadow-sm active:scale-95"
@@ -207,16 +258,33 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
             {responseB ? (
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeHighlight]}
                 components={{
+                  pre({ children }: any) {
+                    return <div className="not-prose">{children}</div>;
+                  },
                   code({ node, inline, className, children, ...props }: any) {
                     const match = /language-(\w+)/.exec(className || '');
-                    const codeString = String(children).replace(/\n$/, '');
                     if (!inline && match) {
-                      return <CodeBlock language={match[1]} value={codeString} />;
+                      return (
+                        <CodeBlock language={match[1]}>
+                          <code className={className} {...props}>
+                            {children}
+                          </code>
+                        </CodeBlock>
+                      );
                     }
-                    if (!inline) return <CodeBlock value={codeString} />;
+                    if (!inline) {
+                      return (
+                        <CodeBlock>
+                          <code className={className} {...props}>
+                            {children}
+                          </code>
+                        </CodeBlock>
+                      );
+                    }
                     return (
-                      <code className="px-1.5 py-0.5 text-xs font-mono bg-white/[0.06] text-velora-copperLight rounded-md">
+                      <code className="px-1.5 py-0.5 text-xs font-mono bg-white/[0.06] text-velora-copperLight rounded-md" {...props}>
                         {children}
                       </code>
                     );
@@ -233,7 +301,20 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
           </div>
 
           {responseB && !isStreaming && (
-            <div className="pt-3.5 border-t border-white/[0.05] mt-3 flex justify-end">
+            <div className="pt-3.5 border-t border-white/[0.05] mt-3 flex items-center justify-between">
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(responseB);
+                  setCopiedB(true);
+                  setTimeout(() => setCopiedB(false), 2000);
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-velora-textMuted hover:text-velora-text bg-white/[0.03] hover:bg-white/[0.06] rounded-full transition-colors"
+                title="Copy Model B response"
+              >
+                {copiedB ? <Check className="w-3.5 h-3.5 text-velora-sage" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copiedB ? 'Copied' : 'Copy'}</span>
+              </button>
+
               <button
                 onClick={() => onAdoptWinner(modelB, responseB, prompt)}
                 className="flex items-center gap-2 px-4 py-1.5 text-xs font-medium bg-velora-copper hover:bg-velora-copperLight text-white rounded-full transition-all shadow-sm active:scale-95"
@@ -258,15 +339,27 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
             disabled={isStreaming}
             className="flex-1 bg-white/[0.03] border border-white/10 px-4 py-2.5 text-xs font-sans text-velora-text placeholder:text-velora-textMuted/40 outline-none rounded-xl focus:border-velora-copper/50"
           />
-          <MagneticButton
-            type="button"
-            onClick={handleRunDuel}
-            disabled={isStreaming || !prompt.trim()}
-            className="flex items-center gap-2 px-5 py-2.5 bg-velora-copper hover:bg-velora-copperLight active:scale-[0.98] text-white text-xs font-medium rounded-full disabled:opacity-30 transition-all shadow-sm whitespace-nowrap"
-          >
-            <Swords className="w-3.5 h-3.5" />
-            <span>{isStreaming ? 'Benchmarking...' : 'Dispatch Duel'}</span>
-          </MagneticButton>
+          {isStreaming ? (
+            <button
+              type="button"
+              onClick={handleStopDuel}
+              className="flex items-center gap-1.5 px-4 py-2.5 bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-400 text-xs font-medium rounded-full transition-all active:scale-[0.98] whitespace-nowrap shadow-sm"
+              title="Stop benchmark duel"
+            >
+              <Square className="w-3 h-3 fill-current" />
+              <span>Stop Benchmark</span>
+            </button>
+          ) : (
+            <MagneticButton
+              type="button"
+              onClick={handleRunDuel}
+              disabled={!prompt.trim()}
+              className="flex items-center gap-2 px-5 py-2.5 bg-velora-copper hover:bg-velora-copperLight active:scale-[0.98] text-white text-xs font-medium rounded-full disabled:opacity-30 transition-all shadow-sm whitespace-nowrap"
+            >
+              <Swords className="w-3.5 h-3.5" />
+              <span>Dispatch Duel</span>
+            </MagneticButton>
+          )}
         </div>
       </div>
     </div>

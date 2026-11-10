@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { ArrowUp, BookMarked, ChevronDown, GitBranch, X } from 'lucide-react';
+import { ArrowUp, BookMarked, ChevronDown, GitBranch, Square, X } from 'lucide-react';
 import { AVAILABLE_MODELS } from '@/lib/puter/ai';
 import { MagneticButton } from '../ui/MagneticButton';
 
@@ -8,6 +8,7 @@ interface RefinedComposerProps {
   setInput: (value: string) => void;
   onSubmit: () => void;
   isLoading: boolean;
+  onStop?: () => void;
   activeModel: string;
   onSelectModel: (modelId: string) => void;
   onOpenVault: () => void;
@@ -20,6 +21,7 @@ export const RefinedComposer: React.FC<RefinedComposerProps> = ({
   setInput,
   onSubmit,
   isLoading,
+  onStop,
   activeModel,
   onSelectModel,
   onOpenVault,
@@ -29,11 +31,14 @@ export const RefinedComposer: React.FC<RefinedComposerProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
 
-  // Auto-resize textarea
+  // Auto-resize and focus textarea when input changes
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
       textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 180)}px`;
+      if (input) {
+        textareaRef.current.focus();
+      }
     }
   }, [input]);
 
@@ -72,7 +77,7 @@ export const RefinedComposer: React.FC<RefinedComposerProps> = ({
       )}
 
       {/* Floating Fluid Island Composer — Aceternity / Linear Style */}
-      <div className="relative bg-[#14161A]/90 backdrop-blur-xl border border-white/10 focus-within:border-white/20 rounded-2xl shadow-2xl transition-all">
+      <div className="relative bg-surface/90 dark:bg-[#14161A]/90 backdrop-blur-xl border border-border focus-within:border-velora-copper/50 rounded-2xl shadow-2xl transition-all">
         <textarea
           ref={textareaRef}
           value={input}
@@ -150,16 +155,28 @@ export const RefinedComposer: React.FC<RefinedComposerProps> = ({
             </button>
           </div>
 
-          {/* Right: Circular Send Button with Magnetic micro-interaction */}
-          <MagneticButton
-            type="button"
-            onClick={onSubmit}
-            disabled={isLoading || !input.trim()}
-            className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-velora-copper hover:bg-velora-copperLight active:scale-95 text-white disabled:opacity-20 disabled:pointer-events-none transition-colors shadow-md"
-            aria-label="Send message"
-          >
-            <ArrowUp className="w-4 h-4 stroke-[2.5]" />
-          </MagneticButton>
+          {/* Right: Circular Send or Stop Button */}
+          {isLoading && onStop ? (
+            <button
+              type="button"
+              onClick={onStop}
+              className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-400 active:scale-95 transition-all shadow-md"
+              title="Stop generating"
+              aria-label="Stop generating"
+            >
+              <Square className="w-3.5 h-3.5 fill-current" />
+            </button>
+          ) : (
+            <MagneticButton
+              type="button"
+              onClick={onSubmit}
+              disabled={isLoading || !input.trim()}
+              className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-velora-copper hover:bg-velora-copperLight active:scale-95 text-white disabled:opacity-20 disabled:pointer-events-none transition-colors shadow-md"
+              aria-label="Send message"
+            >
+              <ArrowUp className="w-4 h-4 stroke-[2.5]" />
+            </MagneticButton>
+          )}
         </div>
       </div>
     </div>

@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   ConversationTree,
+  MessageNode,
   Bookmark,
   PromptTemplate,
   PuterUser,
@@ -36,6 +37,8 @@ import {
   getBranchSiblingInfo,
   switchBranchToSibling,
   getLinearPath,
+  findDeepestLeaf,
+  createId,
 } from '@/lib/storage/tree-manager';
 
 import { RefinedHeader } from '@/components/layout/RefinedHeader';
@@ -62,6 +65,9 @@ export default function VeloraApp() {
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
   const [streamingNodeId, setStreamingNodeId] = useState<string | null>(null);
   const [branchingFromNodeId, setBranchingFromNodeId] = useState<string | null>(null);
+
+  // Abort controller ref for stopping active streams
+  const chatAbortRef = useRef<AbortController | null>(null);
 
   // Modals & Panels
   const [isArenaOpen, setIsArenaOpen] = useState<boolean>(false);
@@ -113,7 +119,7 @@ export default function VeloraApp() {
       document.documentElement.className = 'dark';
     }
 
-    // Global Keyboard Shortcuts
+    // Global Keyboard Shortcuts — extracted inline to avoid stale closure on handleNewConversation
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.shiftKey) {
         if (e.key === 'A' || e.key === 'a') {
@@ -127,7 +133,10 @@ export default function VeloraApp() {
           setIsBookmarksOpen((prev) => !prev);
         } else if (e.key === 'N' || e.key === 'n') {
           e.preventDefault();
-          handleNewConversation();
+          // Inline new-conversation logic to avoid stale closure
+          setActiveId(null);
+          setActiveConversationId(null);
+          setBranchingFromNodeId(null);
         }
       } else if (e.key === 'Escape') {
         setIsArenaOpen(false);
@@ -204,12 +213,17 @@ export default function VeloraApp() {
     setIsStreaming(true);
     setStreamingNodeId(assistantNodeId);
 
+    // Create a fresh abort controller for this turn
+    const ac = new AbortController();
+    chatAbortRef.current = ac;
+
     let accumulated = '';
 
     try {
       await streamPuterChat({
         messages: messagesForModel,
         model,
+        signal: ac.signal,
         onChunk: (chunk) => {
           accumulated += chunk;
           setConversations((prev) => {
@@ -229,18 +243,41 @@ export default function VeloraApp() {
               nodes: updatedNodes,
             };
 
-            const updatedAll = { ...prev, [targetConvId]: updatedConv };
-            saveLocalConversations(updatedAll);
-            return updatedAll;
+            return { ...prev, [targetConvId]: updatedConv };
           });
         },
       });
-    } catch (err) {
-      console.error('Error during AI chat stream:', err);
+
+      // Persist once after stream successfully finishes
+      setConversations((prev) => {
+        saveLocalConversations(prev);
+        return prev;
+      });
+    } catch (err: unknown) {
+      // If aborted by user, save whatever was streamed so far
+      if (err instanceof Error && err.name === 'AbortError') {
+        if (accumulated) {
+          setConversations((prev) => {
+            saveLocalConversations(prev);
+            return prev;
+          });
+        }
+      } else {
+        console.error('Error during AI chat stream:', err);
+      }
     } finally {
+      chatAbortRef.current = null;
       setIsStreaming(false);
       setStreamingNodeId(null);
     }
+  };
+
+  // Stop the active AI stream
+  const handleStopStreaming = () => {
+    chatAbortRef.current?.abort();
+    chatAbortRef.current = null;
+    setIsStreaming(false);
+    setStreamingNodeId(null);
   };
 
   // Dispatch new prompt from chat input
@@ -252,9 +289,14 @@ export default function VeloraApp() {
 
     // Case 1: Branching from an earlier node
     if (currentConversation && branchingFromNodeId) {
+      const targetNode = currentConversation.nodes[branchingFromNodeId];
+      // If user forked a user turn, branch at the same level (parent is targetNode.parentId).
+      // If user forked an assistant turn, branch following that assistant turn (parent is targetNode.id).
+      const branchParentId = targetNode?.role === 'user' ? targetNode.parentId : branchingFromNodeId;
+
       const { updatedTree, assistantNodeId } = branchFromNode(
         currentConversation,
-        branchingFromNodeId,
+        branchParentId,
         userText,
         activeModel
       );
@@ -321,6 +363,8 @@ export default function VeloraApp() {
   ) => {
     if (!currentConversation || isStreaming) return;
 
+    // targetNodeId is the assistant response being analyzed/challenged.
+    // The directive is a follow-up user turn directly under that assistant response.
     const { updatedTree, assistantNodeId } = branchFromNode(
       currentConversation,
       targetNodeId,
@@ -337,6 +381,56 @@ export default function VeloraApp() {
       .map((n) => ({ role: n.role, content: n.content }));
 
     await executeChatTurn(updatedTree.id, assistantNodeId, messagesForModel, activeModel);
+  };
+
+  // Regenerate an alternative assistant response under the same user prompt
+  const handleRegenerate = async (assistantNodeId: string) => {
+    if (!currentConversation || isStreaming) return;
+    const assistantNode = currentConversation.nodes[assistantNodeId];
+    if (!assistantNode || !assistantNode.parentId) return;
+
+    const parentUserNodeId = assistantNode.parentId;
+    const parentUserNode = currentConversation.nodes[parentUserNodeId];
+    if (!parentUserNode) return;
+
+    const newAssistantNodeId = createId();
+    const now = Date.now();
+
+    const newAssistantNode: MessageNode = {
+      id: newAssistantNodeId,
+      parentId: parentUserNodeId,
+      childIds: [],
+      role: 'assistant',
+      content: '',
+      model: activeModel,
+      createdAt: now,
+    };
+
+    const updatedParent = {
+      ...parentUserNode,
+      childIds: [...parentUserNode.childIds, newAssistantNodeId],
+    };
+
+    const updatedTree: ConversationTree = {
+      ...currentConversation,
+      updatedAt: now,
+      activeLeafId: newAssistantNodeId,
+      nodes: {
+        ...currentConversation.nodes,
+        [parentUserNodeId]: updatedParent,
+        [newAssistantNodeId]: newAssistantNode,
+      },
+    };
+
+    const newConvs = { ...conversations, [currentConversation.id]: updatedTree };
+    updateConversations(newConvs);
+
+    const pathNodes = getLinearPath(updatedTree, newAssistantNodeId);
+    const messagesForModel = pathNodes
+      .filter((n) => n.id !== newAssistantNodeId)
+      .map((n) => ({ role: n.role, content: n.content }));
+
+    await executeChatTurn(updatedTree.id, newAssistantNodeId, messagesForModel, activeModel);
   };
 
   // Fork an earlier turn
@@ -383,16 +477,27 @@ export default function VeloraApp() {
   const handleAdoptWinner = async (modelId: string, content: string, promptText: string) => {
     setIsArenaOpen(false);
 
-    const { tree, assistantNodeId } = createNewConversationTree(
-      `[Arena Benchmark] ${promptText}`,
-      modelId
-    );
-
-    tree.nodes[assistantNodeId].content = content;
-
-    const newConvs = { ...conversations, [tree.id]: tree };
-    updateConversations(newConvs);
-    selectConversation(tree.id);
+    if (currentConversation && Object.keys(currentConversation.nodes).length > 0) {
+      // Append turn to the active conversation
+      const { updatedTree, assistantNodeId } = appendTurnToActiveLeaf(
+        currentConversation,
+        promptText,
+        modelId
+      );
+      updatedTree.nodes[assistantNodeId].content = content;
+      const newConvs = { ...conversations, [currentConversation.id]: updatedTree };
+      updateConversations(newConvs);
+    } else {
+      // Create a new conversation
+      const { tree, assistantNodeId } = createNewConversationTree(
+        promptText,
+        modelId
+      );
+      tree.nodes[assistantNodeId].content = content;
+      const newConvs = { ...conversations, [tree.id]: tree };
+      updateConversations(newConvs);
+      selectConversation(tree.id);
+    }
   };
 
   // Conversation Organization Handlers
@@ -428,6 +533,13 @@ export default function VeloraApp() {
     delete newConvs[id];
     updateConversations(newConvs);
 
+    // Also remove any bookmarks that belonged to this conversation
+    const updatedBookmarks = bookmarks.filter((b) => b.conversationId !== id);
+    if (updatedBookmarks.length !== bookmarks.length) {
+      setBookmarks(updatedBookmarks);
+      saveLocalBookmarks(updatedBookmarks);
+    }
+
     if (activeId === id) {
       const remainingKeys = Object.keys(newConvs);
       if (remainingKeys.length > 0) {
@@ -452,6 +564,7 @@ export default function VeloraApp() {
         onDeleteConversation={handleDeleteConversation}
         isPuterSignedIn={Boolean(user)}
         onOpenBookmarks={() => setIsBookmarksOpen(true)}
+        onOpenVault={() => setIsVaultOpen(true)}
         isOpen={isMobileSidebarOpen}
         onCloseMobile={() => setIsMobileSidebarOpen(false)}
         isCollapsed={isSidebarCollapsed}
@@ -494,6 +607,7 @@ export default function VeloraApp() {
                 onNavigateBranch={handleNavigateBranch}
                 onAnswerControl={handleAnswerControl}
                 onForkTurn={handleForkTurn}
+                onRegenerate={handleRegenerate}
                 onToggleBookmark={handleToggleBookmark}
                 bookmarksMap={bookmarksMap}
                 onSelectPromptStarter={(promptText) => {
@@ -517,6 +631,7 @@ export default function VeloraApp() {
                 onOpenVault={() => setIsVaultOpen(true)}
                 branchingFromNodeId={branchingFromNodeId}
                 onCancelBranching={() => setBranchingFromNodeId(null)}
+                onStop={handleStopStreaming}
               />
             </div>
           </main>
@@ -530,6 +645,7 @@ export default function VeloraApp() {
         vault={vault}
         onSelectPrompt={(filledPrompt) => {
           setInput(filledPrompt);
+          setIsArenaOpen(false);
         }}
         onSaveNewTemplate={(newTemplate) => {
           const updatedVault = [newTemplate, ...vault];
@@ -545,7 +661,21 @@ export default function VeloraApp() {
         bookmarks={bookmarks}
         onSelectBookmark={(bookmark) => {
           if (bookmark.conversationId && conversations[bookmark.conversationId]) {
+            const conv = conversations[bookmark.conversationId];
+            if (conv.nodes[bookmark.messageId]) {
+              const targetLeafId = findDeepestLeaf(conv, bookmark.messageId);
+              const updatedTree = {
+                ...conv,
+                activeLeafId: targetLeafId,
+                updatedAt: Date.now(),
+              };
+              updateConversations({ ...conversations, [conv.id]: updatedTree });
+            }
             selectConversation(bookmark.conversationId);
+            setTimeout(() => {
+              const el = document.getElementById(`msg-${bookmark.messageId}`);
+              el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 150);
           }
         }}
         onDeleteBookmark={(id) => {

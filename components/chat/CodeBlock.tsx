@@ -1,17 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Check, Copy } from 'lucide-react';
 
 interface CodeBlockProps {
   language?: string;
-  value: string;
+  value?: string;
+  children?: React.ReactNode;
 }
 
-export const CodeBlock: React.FC<CodeBlockProps> = ({ language, value }) => {
+export const CodeBlock: React.FC<CodeBlockProps> = ({ language, value, children }) => {
   const [copied, setCopied] = useState(false);
+  const codeRef = useRef<HTMLDivElement>(null);
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(value);
+      const codeText = (value && value.trim()) ? value : (codeRef.current?.innerText ?? '');
+      await navigator.clipboard.writeText(codeText);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -22,12 +25,12 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ language, value }) => {
   const displayLang = (language || 'code').toUpperCase();
 
   return (
-    <div className="relative my-4 border border-editorial-borderDark rounded-sm overflow-hidden bg-editorial-obsidian">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-editorial-charcoal/80 border-b border-editorial-borderDark text-[11px] font-mono text-muted-foreground select-none">
-        <span className="text-editorial-bronze font-medium tracking-wider">{displayLang}</span>
+    <div className="relative my-4 border border-velora-border rounded-md overflow-hidden bg-[#0E1013]">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#13151A] border-b border-velora-border text-[11px] font-mono text-velora-textMuted select-none">
+        <span className="text-velora-copper font-medium tracking-wider">{displayLang}</span>
         <button
           onClick={handleCopy}
-          className="inline-flex items-center gap-1 text-[11px] hover:text-foreground transition-colors px-1.5 py-0.5 rounded-sm hover:bg-muted/30"
+          className="inline-flex items-center gap-1 text-[11px] hover:text-velora-text transition-colors px-1.5 py-0.5 rounded-sm hover:bg-white/[0.06]"
           title="Copy code to clipboard"
         >
           {copied ? (
@@ -44,12 +47,17 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ language, value }) => {
         </button>
       </div>
 
-      <div className="overflow-x-auto p-4 text-xs font-mono leading-relaxed text-[#EDEDED]">
-        <pre className="!bg-transparent !p-0 !m-0 !border-none">
-          <code>{value}</code>
-        </pre>
+      <div ref={codeRef} className="overflow-x-auto p-4 text-xs font-mono leading-relaxed text-[#EDEDED]">
+        {children ? (
+          <pre className="!bg-transparent !p-0 !m-0 !border-none">
+            {children}
+          </pre>
+        ) : (
+          <pre className="!bg-transparent !p-0 !m-0 !border-none">
+            <code>{value}</code>
+          </pre>
+        )}
       </div>
     </div>
   );
 };
-

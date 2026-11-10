@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { BookMarked, Swords, ArrowUpRight } from 'lucide-react';
+import { BookMarked, Compass, Swords, ArrowUpRight } from 'lucide-react';
 import { ConversationTree, AnswerControlAction } from '@/lib/types';
 import { EditorialMessage } from './EditorialMessage';
 import { getLinearPath, getBranchSiblingInfo } from '@/lib/storage/tree-manager';
@@ -12,6 +12,7 @@ interface EditorialChatViewProps {
   onNavigateBranch: (nodeId: string, newIndex: number) => void;
   onAnswerControl: (nodeId: string, action: AnswerControlAction, directive: string) => void;
   onForkTurn: (nodeId: string) => void;
+  onRegenerate?: (nodeId: string) => void;
   onToggleBookmark: (messageId: string, content: string, model: string, note?: string) => void;
   bookmarksMap: Record<string, string>;
   onSelectPromptStarter: (prompt: string) => void;
@@ -46,11 +47,13 @@ export const EditorialChatView: React.FC<EditorialChatViewProps> = ({
   onNavigateBranch,
   onAnswerControl,
   onForkTurn,
+  onRegenerate,
   onToggleBookmark,
   bookmarksMap,
   onSelectPromptStarter,
   onOpenArena,
   onOpenVault,
+  onOpenLanding,
 }) => {
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -91,6 +94,14 @@ export const EditorialChatView: React.FC<EditorialChatViewProps> = ({
               <BookMarked className="w-3.5 h-3.5 text-velora-copper" />
               <span>Prompt Vault</span>
             </button>
+
+            <button
+              onClick={onOpenLanding}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white/[0.04] hover:bg-white/[0.08] text-xs text-velora-text rounded-full transition-all active:scale-95"
+            >
+              <Compass className="w-3.5 h-3.5 text-velora-copper" />
+              <span>About VELORA</span>
+            </button>
           </div>
 
           {/* Clean Suggestion Chips (Aceternity / Claude style, NO clunky boxes) */}
@@ -125,7 +136,7 @@ export const EditorialChatView: React.FC<EditorialChatViewProps> = ({
 
   return (
     <div className="w-full">
-      <div className="min-h-full flex flex-col justify-between pt-4 pb-12">
+      <div className="min-h-full flex flex-col justify-between pt-4 pb-48">
         <div>
           {linearNodes.map((node) => {
             const siblingInfo = getBranchSiblingInfo(conversation, node.id);
@@ -142,6 +153,7 @@ export const EditorialChatView: React.FC<EditorialChatViewProps> = ({
                 onNavigateBranch={(newIndex) => onNavigateBranch(node.id, newIndex)}
                 onAnswerControl={(action, directive) => onAnswerControl(node.id, action, directive)}
                 onForkTurn={() => onForkTurn(node.id)}
+                onRegenerate={onRegenerate ? () => onRegenerate(node.id) : undefined}
                 onToggleBookmark={(msgId, content, model, noteText) =>
                   onToggleBookmark(msgId, content, model, noteText)
                 }
@@ -151,7 +163,7 @@ export const EditorialChatView: React.FC<EditorialChatViewProps> = ({
             );
           })}
         </div>
-        <div ref={bottomRef} className="h-6" />
+        <div ref={bottomRef} className="h-16" />
       </div>
     </div>
   );

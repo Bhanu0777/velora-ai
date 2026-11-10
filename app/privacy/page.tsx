@@ -4,13 +4,13 @@ import { ArrowLeft, Shield } from 'lucide-react';
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="min-h-screen bg-background text-foreground py-12 px-6 md:px-12 selection:bg-editorial-bronze selection:text-white">
+    <div className="min-h-screen bg-background text-foreground py-12 px-6 md:px-12 selection:bg-velora-copper/30 selection:text-white">
       <div className="max-w-3xl mx-auto space-y-8">
         {/* Navigation */}
         <div>
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-xs font-mono text-muted-foreground hover:text-foreground transition-colors border border-border/70 hover:border-editorial-bronze px-2.5 py-1 rounded-sm"
+            className="inline-flex items-center gap-1.5 text-xs font-mono text-muted-foreground hover:text-foreground transition-colors border border-border/70 hover:border-velora-copper px-2.5 py-1 rounded-sm"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Return to Workspace</span>
@@ -19,7 +19,7 @@ export default function PrivacyPolicyPage() {
 
         {/* Title */}
         <div className="border-b border-border pb-6 space-y-2">
-          <div className="flex items-center gap-2 text-editorial-bronze text-xs font-mono uppercase tracking-widest">
+          <div className="flex items-center gap-2 text-velora-copper text-xs font-mono uppercase tracking-widest">
             <Shield className="w-3.5 h-3.5" />
             <span>Governance & Confidentiality</span>
           </div>

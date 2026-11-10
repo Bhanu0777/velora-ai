@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { BookMarked, Plus, Search, Sparkles, X, ArrowRight, Layers } from 'lucide-react';
 import { PromptTemplate } from '@/lib/types';
@@ -35,6 +35,21 @@ export const RefinedPromptVault: React.FC<RefinedPromptVaultProps> = ({
   const [newPromptText, setNewPromptText] = useState('');
 
   const categories = ['All', 'Strategy', 'Code', 'Writing', 'Analysis', 'Systems'];
+
+  // Reset local UI state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectedCategory('All');
+      setSearchQuery('');
+      setFillingTemplate(null);
+      setVariableValues({});
+      setIsCreatingNew(false);
+      setNewTitle('');
+      setNewCategory('Strategy');
+      setNewDescription('');
+      setNewPromptText('');
+    }
+  }, [isOpen]);
 
   const filteredVault = vault.filter((item) => {
     const matchesCat = selectedCategory === 'All' || item.category === selectedCategory;
