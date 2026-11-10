@@ -263,3 +263,4 @@ export const ModelArena: React.FC<ModelArenaProps> = ({ onAdoptWinner, onClose }
     </div>
   );
 };
+

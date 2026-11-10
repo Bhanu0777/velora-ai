@@ -71,3 +71,4 @@ export const BookmarkNoteModal: React.FC<BookmarkNoteModalProps> = ({
     </Dialog.Root>
   );
 };
+

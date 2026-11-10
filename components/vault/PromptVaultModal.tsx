@@ -368,3 +368,4 @@ export const PromptVaultModal: React.FC<PromptVaultModalProps> = ({
     </Dialog.Root>
   );
 };
+

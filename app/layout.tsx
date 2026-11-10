@@ -29,11 +29,23 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <head>
+        {/* Favicon */}
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         {/* Puter.js SDK */}
         <Script
           src="https://js.puter.com/v2/"
           strategy="beforeInteractive"
         />
+        {/* Service Worker Registration */}
+        <Script id="register-sw" strategy="afterInteractive">
+          {`
+            if ('serviceWorker' in navigator) {
+              window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(console.error);
+              });
+            }
+          `}
+        </Script>
         {/* Google Fonts: Newsreader (Editorial Serif) & Inter */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

@@ -38,13 +38,15 @@ import {
   getLinearPath,
 } from '@/lib/storage/tree-manager';
 
-import { Header } from '@/components/layout/Header';
-import { Sidebar } from '@/components/layout/Sidebar';
-import { ChatContainer } from '@/components/chat/ChatContainer';
-import { ChatInput } from '@/components/chat/ChatInput';
-import { ModelArena } from '@/components/arena/ModelArena';
-import { PromptVaultModal } from '@/components/vault/PromptVaultModal';
-import { BookmarksDrawer } from '@/components/bookmarks/BookmarksDrawer';
+import { RefinedHeader } from '@/components/layout/RefinedHeader';
+import { RefinedSidebar } from '@/components/sidebar/RefinedSidebar';
+import { EditorialChatView } from '@/components/chat/EditorialChatView';
+import { RefinedComposer } from '@/components/chat/RefinedComposer';
+import { RefinedModelArena } from '@/components/arena/RefinedModelArena';
+import { RefinedPromptVault } from '@/components/vault/RefinedPromptVault';
+import { RefinedBookmarks } from '@/components/bookmarks/RefinedBookmarks';
+import { LandingHeroModal } from '@/components/landing/LandingHeroModal';
+import { PWAInstallPrompt } from '@/components/pwa/PWAInstallPrompt';
 
 export default function VeloraApp() {
   // Persistence state
@@ -61,11 +63,13 @@ export default function VeloraApp() {
   const [streamingNodeId, setStreamingNodeId] = useState<string | null>(null);
   const [branchingFromNodeId, setBranchingFromNodeId] = useState<string | null>(null);
 
-  // Modals & Drawers
+  // Modals & Panels
   const [isArenaOpen, setIsArenaOpen] = useState<boolean>(false);
   const [isVaultOpen, setIsVaultOpen] = useState<boolean>(false);
   const [isBookmarksOpen, setIsBookmarksOpen] = useState<boolean>(false);
+  const [isLandingOpen, setIsLandingOpen] = useState<boolean>(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState<boolean>(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
 
   // 1. Initial Load: LocalStorage & Puter Auth check
@@ -92,7 +96,6 @@ export default function VeloraApp() {
     getPuterUser().then((u) => {
       if (u) {
         setUser(u);
-        // Sync cloud KV with local
         syncLocalWithPuterCloud().then((synced) => {
           setConversations(synced.conversations);
           setBookmarks(synced.bookmarks);
@@ -106,10 +109,39 @@ export default function VeloraApp() {
     if (savedTheme) {
       setTheme(savedTheme);
       document.documentElement.className = savedTheme;
+    } else {
+      document.documentElement.className = 'dark';
     }
+
+    // Global Keyboard Shortcuts
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey) {
+        if (e.key === 'A' || e.key === 'a') {
+          e.preventDefault();
+          setIsArenaOpen((prev) => !prev);
+        } else if (e.key === 'V' || e.key === 'v') {
+          e.preventDefault();
+          setIsVaultOpen((prev) => !prev);
+        } else if (e.key === 'B' || e.key === 'b') {
+          e.preventDefault();
+          setIsBookmarksOpen((prev) => !prev);
+        } else if (e.key === 'N' || e.key === 'n') {
+          e.preventDefault();
+          handleNewConversation();
+        }
+      } else if (e.key === 'Escape') {
+        setIsArenaOpen(false);
+        setIsVaultOpen(false);
+        setIsBookmarksOpen(false);
+        setIsLandingOpen(false);
+        setIsMobileSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Update localStorage when conversations change
   const updateConversations = useCallback(
     (newConvs: Record<string, ConversationTree>) => {
       setConversations(newConvs);
@@ -118,14 +150,12 @@ export default function VeloraApp() {
     []
   );
 
-  // Update active conversation
   const selectConversation = useCallback((id: string) => {
     setActiveId(id);
     setActiveConversationId(id);
     setBranchingFromNodeId(null);
   }, []);
 
-  // Theme toggle
   const toggleTheme = () => {
     const next = theme === 'dark' ? 'light' : 'dark';
     setTheme(next);
@@ -154,10 +184,8 @@ export default function VeloraApp() {
     setUser(null);
   };
 
-  // Active conversation helper
   const currentConversation = activeId ? conversations[activeId] || null : null;
 
-  // Bookmarks Map for fast lookup (messageId -> note)
   const bookmarksMap = React.useMemo(() => {
     const map: Record<string, string> = {};
     bookmarks.forEach((b) => {
@@ -285,7 +313,7 @@ export default function VeloraApp() {
     updateConversations({ ...conversations, [currentConversation.id]: updatedTree });
   };
 
-  // Editorial Answer Controls (Explain Simply, Examples, Summarize, Deeper, Challenge)
+  // Editorial Answer Controls
   const handleAnswerControl = async (
     targetNodeId: string,
     action: AnswerControlAction,
@@ -328,16 +356,13 @@ export default function VeloraApp() {
 
     if (existingIndex >= 0) {
       if (note !== undefined) {
-        // Update note
         updated = bookmarks.map((b) =>
           b.messageId === messageId ? { ...b, note: note } : b
         );
       } else {
-        // Remove
         updated = bookmarks.filter((b) => b.messageId !== messageId);
       }
     } else {
-      // Add
       const newBookmark: Bookmark = {
         id: 'bm_' + Date.now().toString(36),
         conversationId: activeId || '',
@@ -358,13 +383,11 @@ export default function VeloraApp() {
   const handleAdoptWinner = async (modelId: string, content: string, promptText: string) => {
     setIsArenaOpen(false);
 
-    // Create a new thread or append to active
-    const { tree, userNodeId, assistantNodeId } = createNewConversationTree(
-      `[Arena Duel] ${promptText}`,
+    const { tree, assistantNodeId } = createNewConversationTree(
+      `[Arena Benchmark] ${promptText}`,
       modelId
     );
 
-    // Fill in the assistant response immediately
     tree.nodes[assistantNodeId].content = content;
 
     const newConvs = { ...conversations, [tree.id]: tree };
@@ -416,9 +439,9 @@ export default function VeloraApp() {
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground">
-      {/* Sidebar */}
-      <Sidebar
+    <div className="flex h-screen w-screen overflow-hidden bg-velora-bg text-velora-text select-text">
+      {/* Redesigned Architectural Sidebar */}
+      <RefinedSidebar
         conversations={conversations}
         activeId={activeId}
         onSelectConversation={selectConversation}
@@ -431,18 +454,21 @@ export default function VeloraApp() {
         onOpenBookmarks={() => setIsBookmarksOpen(true)}
         isOpen={isMobileSidebarOpen}
         onCloseMobile={() => setIsMobileSidebarOpen(false)}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
       />
 
-      {/* Main Content Viewport */}
-      <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden">
-        {/* Header */}
-        <Header
+      {/* Main Content Workspace Viewport */}
+      <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden relative">
+        {/* Redesigned Header */}
+        <RefinedHeader
           activeModel={activeModel}
           onSelectModel={setActiveModel}
           isArenaOpen={isArenaOpen}
           onToggleArena={() => setIsArenaOpen(!isArenaOpen)}
           onOpenVault={() => setIsVaultOpen(true)}
           onOpenBookmarks={() => setIsBookmarksOpen(true)}
+          onOpenLanding={() => setIsLandingOpen(true)}
           user={user}
           onSignIn={handleSignIn}
           onSignOut={handleSignOut}
@@ -451,15 +477,15 @@ export default function VeloraApp() {
           onToggleTheme={toggleTheme}
         />
 
-        {/* Viewport: Either Model Arena or Active Chat */}
+        {/* Viewport: Either Model Arena or Editorial Chat */}
         {isArenaOpen ? (
-          <ModelArena
+          <RefinedModelArena
             onAdoptWinner={handleAdoptWinner}
             onClose={() => setIsArenaOpen(false)}
           />
         ) : (
           <main className="flex-1 flex flex-col overflow-hidden relative">
-            <ChatContainer
+            <EditorialChatView
               conversation={currentConversation}
               isStreaming={isStreaming}
               streamingNodeId={streamingNodeId}
@@ -473,15 +499,17 @@ export default function VeloraApp() {
               }}
               onOpenArena={() => setIsArenaOpen(true)}
               onOpenVault={() => setIsVaultOpen(true)}
+              onOpenLanding={() => setIsLandingOpen(true)}
             />
 
-            {/* Input Bar */}
-            <ChatInput
+            {/* Redesigned Architectural Composer */}
+            <RefinedComposer
               input={input}
               setInput={setInput}
               onSubmit={handleSendMessage}
               isLoading={isStreaming}
               activeModel={activeModel}
+              onSelectModel={setActiveModel}
               onOpenVault={() => setIsVaultOpen(true)}
               branchingFromNodeId={branchingFromNodeId}
               onCancelBranching={() => setBranchingFromNodeId(null)}
@@ -490,8 +518,8 @@ export default function VeloraApp() {
         )}
       </div>
 
-      {/* Prompt Vault Modal */}
-      <PromptVaultModal
+      {/* Redesigned Prompt Vault Modal */}
+      <RefinedPromptVault
         isOpen={isVaultOpen}
         onClose={() => setIsVaultOpen(false)}
         vault={vault}
@@ -505,8 +533,8 @@ export default function VeloraApp() {
         }}
       />
 
-      {/* Bookmarks Drawer */}
-      <BookmarksDrawer
+      {/* Redesigned Saved Reflections / Bookmarks Drawer */}
+      <RefinedBookmarks
         isOpen={isBookmarksOpen}
         onClose={() => setIsBookmarksOpen(false)}
         bookmarks={bookmarks}
@@ -526,6 +554,19 @@ export default function VeloraApp() {
           saveLocalBookmarks(updated);
         }}
       />
+
+      {/* Product Manifesto / Landing Modal */}
+      <LandingHeroModal
+        isOpen={isLandingOpen}
+        onClose={() => setIsLandingOpen(false)}
+        onEnterWorkspace={() => {
+          setIsLandingOpen(false);
+          handleNewConversation();
+        }}
+      />
+
+      {/* PWA Installation Prompt */}
+      <PWAInstallPrompt />
     </div>
   );
 }

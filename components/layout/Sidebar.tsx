@@ -3,6 +3,7 @@ import Link from 'next/link';
 import {
   Bookmark,
   Check,
+  Download,
   Edit2,
   FolderSync,
   Heart,
@@ -14,6 +15,7 @@ import {
   X,
 } from 'lucide-react';
 import { ConversationTree } from '@/lib/types';
+import { getLinearPath } from '@/lib/storage/tree-manager';
 import { Button } from '../ui/button';
 
 interface SidebarProps {
@@ -69,6 +71,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
       onRenameConversation(id, renameValue.trim());
     }
     setEditingId(null);
+  };
+
+  const exportConversation = (conv: ConversationTree) => {
+    const linearNodes = getLinearPath(conv);
+    let md = `# ${conv.title}\n\n*Exported from VELORA — Editorial Intelligence*\n*Date: ${new Date(conv.updatedAt).toLocaleString()}*\n\n---\n\n`;
+
+    linearNodes.forEach((node, i) => {
+      const speaker = node.role === 'user' ? '### Inquiry' : `### Response (${node.model || 'Model'})`;
+      md += `${speaker}\n\n${node.content}\n\n---\n\n`;
+    });
+
+    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${conv.title.replace(/[^a-zA-Z0-9_-]/g, '_')}.md`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   const renderConvItem = (conv: ConversationTree) => {
@@ -151,6 +171,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
               title="Rename reflection"
             >
               <Edit2 className="w-3 h-3" />
+            </button>
+
+            {/* Export Markdown */}
+            <button
+              onClick={() => exportConversation(conv)}
+              className="p-1 text-muted-foreground hover:text-foreground transition-colors"
+              title="Export as Markdown (.md)"
+            >
+              <Download className="w-3 h-3" />
             </button>
 
             {/* Delete */}
@@ -298,3 +327,4 @@ export const Sidebar: React.FC<SidebarProps> = ({
     </>
   );
 };
+

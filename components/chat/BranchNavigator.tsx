@@ -54,3 +54,4 @@ export const BranchNavigator: React.FC<BranchNavigatorProps> = ({
     </div>
   );
 };
+

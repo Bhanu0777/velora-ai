@@ -85,3 +85,4 @@ export async function loadVaultFromPuter(): Promise<PromptTemplate[] | null> {
     return null;
   }
 }
+

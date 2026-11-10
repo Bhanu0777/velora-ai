@@ -26,3 +26,4 @@ export function animateBranchSwitch(element: HTMLElement | null) {
     { opacity: 1, filter: 'blur(0px)', duration: 0.22, ease: 'power2.out' }
   );
 }
+
