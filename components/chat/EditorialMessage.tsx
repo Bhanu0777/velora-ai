@@ -145,7 +145,7 @@ export const EditorialMessage: React.FC<EditorialMessageProps> = ({
       </div>
 
       {/* Main Prose Content */}
-      <div className="prose prose-neutral dark:prose-invert max-w-none text-[15.5px] leading-[1.8] font-sans text-velora-text selection:bg-velora-copper/30">
+      <div className="prose prose-neutral dark:prose-invert max-w-none text-[15.5px] leading-[1.8] font-sans text-velora-text prose-p:my-3 prose-headings:font-serif prose-headings:text-velora-text prose-h3:text-lg prose-h3:font-normal prose-h3:mt-6 prose-h3:mb-2 prose-ul:my-2 prose-li:my-1 prose-hr:border-white/[0.08] selection:bg-velora-copper/30">
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           components={{

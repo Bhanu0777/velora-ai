@@ -486,35 +486,39 @@ export default function VeloraApp() {
           />
         ) : (
           <main className="flex-1 flex flex-col overflow-hidden relative">
-            <EditorialChatView
-              conversation={currentConversation}
-              isStreaming={isStreaming}
-              streamingNodeId={streamingNodeId}
-              onNavigateBranch={handleNavigateBranch}
-              onAnswerControl={handleAnswerControl}
-              onForkTurn={handleForkTurn}
-              onToggleBookmark={handleToggleBookmark}
-              bookmarksMap={bookmarksMap}
-              onSelectPromptStarter={(promptText) => {
-                setInput(promptText);
-              }}
-              onOpenArena={() => setIsArenaOpen(true)}
-              onOpenVault={() => setIsVaultOpen(true)}
-              onOpenLanding={() => setIsLandingOpen(true)}
-            />
+            <div className="flex-1 overflow-y-auto flex flex-col justify-between">
+              <EditorialChatView
+                conversation={currentConversation}
+                isStreaming={isStreaming}
+                streamingNodeId={streamingNodeId}
+                onNavigateBranch={handleNavigateBranch}
+                onAnswerControl={handleAnswerControl}
+                onForkTurn={handleForkTurn}
+                onToggleBookmark={handleToggleBookmark}
+                bookmarksMap={bookmarksMap}
+                onSelectPromptStarter={(promptText) => {
+                  setInput(promptText);
+                }}
+                onOpenArena={() => setIsArenaOpen(true)}
+                onOpenVault={() => setIsVaultOpen(true)}
+                onOpenLanding={() => setIsLandingOpen(true)}
+              />
+            </div>
 
-            {/* Redesigned Architectural Composer */}
-            <RefinedComposer
-              input={input}
-              setInput={setInput}
-              onSubmit={handleSendMessage}
-              isLoading={isStreaming}
-              activeModel={activeModel}
-              onSelectModel={setActiveModel}
-              onOpenVault={() => setIsVaultOpen(true)}
-              branchingFromNodeId={branchingFromNodeId}
-              onCancelBranching={() => setBranchingFromNodeId(null)}
-            />
+            {/* Redesigned Architectural Composer pinned at bottom with blur mask */}
+            <div className="w-full bg-gradient-to-t from-velora-bg via-velora-bg/95 to-transparent pt-3 z-10">
+              <RefinedComposer
+                input={input}
+                setInput={setInput}
+                onSubmit={handleSendMessage}
+                isLoading={isStreaming}
+                activeModel={activeModel}
+                onSelectModel={setActiveModel}
+                onOpenVault={() => setIsVaultOpen(true)}
+                branchingFromNodeId={branchingFromNodeId}
+                onCancelBranching={() => setBranchingFromNodeId(null)}
+              />
+            </div>
           </main>
         )}
       </div>

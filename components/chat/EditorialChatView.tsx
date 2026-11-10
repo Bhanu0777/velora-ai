@@ -124,8 +124,8 @@ export const EditorialChatView: React.FC<EditorialChatViewProps> = ({
   const linearNodes = getLinearPath(conversation);
 
   return (
-    <div className="flex-1 overflow-y-auto">
-      <div className="min-h-full flex flex-col justify-between pt-4">
+    <div className="w-full">
+      <div className="min-h-full flex flex-col justify-between pt-4 pb-12">
         <div>
           {linearNodes.map((node) => {
             const siblingInfo = getBranchSiblingInfo(conversation, node.id);
