@@ -1,7 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Bookmark, Check, Copy, GitBranch, Sparkles } from 'lucide-react';
+import {
+  Bookmark,
+  Check,
+  Copy,
+  GitBranch,
+  Sparkles,
+  Zap,
+  BookOpen,
+  ListFilter,
+  Compass,
+  AlertCircle,
+} from 'lucide-react';
 import { MessageNode, AnswerControlAction } from '@/lib/types';
 import { CodeBlock } from './CodeBlock';
 import { BranchConnectorHUD } from './BranchConnectorHUD';
@@ -27,31 +38,37 @@ const ANSWER_CONTROLS: Array<{
   id: AnswerControlAction;
   label: string;
   directive: string;
+  icon: React.ComponentType<{ className?: string }>;
 }> = [
   {
     id: 'explain-simply',
-    label: 'Explain simply',
+    label: 'Explain Simply',
     directive: 'Explain the preceding response in simple, crystal-clear terms with minimal technical jargon, preserving core insights.',
+    icon: Zap,
   },
   {
     id: 'give-examples',
-    label: 'Give examples',
+    label: 'Give Examples',
     directive: 'Provide concrete, real-world examples and code/scenario implementations directly illustrating the preceding points.',
+    icon: BookOpen,
   },
   {
     id: 'summarize',
     label: 'Summarize',
     directive: 'Distill the preceding analysis into high-density executive bullet points and key takeaways.',
+    icon: ListFilter,
   },
   {
     id: 'go-deeper',
-    label: 'Go deeper',
+    label: 'Go Deeper',
     directive: 'Explore the underlying mechanisms, second-order systemic effects, and advanced technical trade-offs of this answer.',
+    icon: Compass,
   },
   {
     id: 'challenge',
-    label: 'Challenge answer',
+    label: 'Challenge Answer',
     directive: 'Act as an adversarial critic. Challenge the assumptions, expose potential failure modes, and present counter-theses to this answer.',
+    icon: AlertCircle,
   },
 ];
 
@@ -184,49 +201,58 @@ export const EditorialMessage: React.FC<EditorialMessageProps> = ({
         </div>
       )}
 
-      {/* Modern subtle follow-up / answer refinement chips */}
+      {/* Modern Aceternity-inspired answer refinement pills */}
       {!isStreaming && node.content && (
         <div className="mt-5 pt-3 border-t border-white/[0.05] select-none">
-          <div className="flex flex-wrap items-center gap-1.5">
-            {ANSWER_CONTROLS.map((ctrl) => (
-              <button
-                key={ctrl.id}
-                onClick={() => onAnswerControl(ctrl.id, ctrl.directive)}
-                className="px-3 py-1 text-xs text-velora-textMuted hover:text-velora-text bg-white/[0.03] hover:bg-white/[0.08] rounded-full transition-all active:scale-[0.98]"
-              >
-                {ctrl.label}
-              </button>
-            ))}
+          <div className="flex flex-wrap items-center gap-2">
+            {ANSWER_CONTROLS.map((ctrl) => {
+              const Icon = ctrl.icon;
+              return (
+                <button
+                  key={ctrl.id}
+                  onClick={() => onAnswerControl(ctrl.id, ctrl.directive)}
+                  className="group/pill inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs text-velora-textMuted hover:text-velora-text bg-white/[0.03] hover:bg-white/[0.08] hover:border-velora-copper/30 border border-white/[0.04] rounded-full transition-all duration-150 active:scale-[0.97]"
+                >
+                  <Icon className="w-3 h-3 text-velora-copper opacity-70 group-hover/pill:opacity-100 transition-opacity" />
+                  <span>{ctrl.label}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
 
-      {/* Subtle action icons on hover */}
-      <div className="flex items-center gap-3 mt-3 opacity-0 group-hover:opacity-100 transition-opacity text-velora-textMuted select-none">
+      {/* Subtle action controls on hover */}
+      <div className="flex items-center gap-2 mt-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-velora-textMuted select-none">
         <button
           onClick={handleCopy}
-          className="p-1 hover:text-velora-text transition-colors"
+          className="flex items-center gap-1 px-2.5 py-1 text-xs hover:text-velora-text bg-white/[0.02] hover:bg-white/[0.06] rounded-full transition-colors"
           title="Copy response"
         >
           {copied ? <Check className="w-3.5 h-3.5 text-velora-sage" /> : <Copy className="w-3.5 h-3.5" />}
+          <span className="text-[11px]">{copied ? 'Copied' : 'Copy'}</span>
         </button>
 
         <button
           onClick={() => setIsNoteModalOpen(true)}
-          className={`p-1 transition-colors ${
-            isBookmarked ? 'text-velora-copper' : 'hover:text-velora-text'
+          className={`flex items-center gap-1 px-2.5 py-1 text-xs rounded-full transition-colors ${
+            isBookmarked
+              ? 'text-velora-copper bg-velora-copper/10'
+              : 'hover:text-velora-text bg-white/[0.02] hover:bg-white/[0.06]'
           }`}
           title={isBookmarked ? 'Edit bookmark note' : 'Bookmark response'}
         >
           <Bookmark className={`w-3.5 h-3.5 ${isBookmarked ? 'fill-velora-copper' : ''}`} />
+          <span className="text-[11px]">{isBookmarked ? 'Saved' : 'Save'}</span>
         </button>
 
         <button
           onClick={() => onForkTurn(node.id)}
-          className="p-1 hover:text-velora-copper transition-colors"
+          className="flex items-center gap-1 px-2.5 py-1 text-xs hover:text-velora-copper bg-white/[0.02] hover:bg-white/[0.06] rounded-full transition-colors"
           title="Fork alternative branch from here"
         >
           <GitBranch className="w-3.5 h-3.5" />
+          <span className="text-[11px]">Fork Branch</span>
         </button>
       </div>
 
