@@ -75,13 +75,13 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
       {/* Arena Header */}
       <div className="flex items-center justify-between px-6 py-3.5 border-b border-velora-border bg-velora-surface">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 flex items-center justify-center bg-velora-elevated text-velora-copper border border-velora-border rounded-xs">
+          <div className="w-8 h-8 flex items-center justify-center bg-velora-elevated text-velora-copper border border-velora-border rounded-sm">
             <Swords className="w-4 h-4" />
           </div>
           <div>
             <h2 className="font-serif text-lg text-velora-text tracking-tight flex items-center gap-2">
               Model Arena
-              <span className="text-[9px] font-mono uppercase px-1.5 py-0.2 bg-velora-copper/10 text-velora-copper border border-velora-copper/30 rounded-xs">
+              <span className="text-[10px] font-mono px-2 py-0.5 bg-velora-copper/10 text-velora-copper border border-velora-copper/30 rounded-sm">
                 Synchronous Benchmark
               </span>
             </h2>
@@ -93,7 +93,7 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
 
         <button
           onClick={onClose}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono text-velora-textMuted hover:text-velora-text hover:bg-velora-elevated border border-velora-border rounded-xs transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono text-velora-textMuted hover:text-velora-text hover:bg-velora-elevated border border-velora-border rounded-sm transition-colors"
         >
           <X className="w-3.5 h-3.5" />
           <span>Exit Arena</span>
@@ -113,7 +113,7 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
                 value={modelA}
                 onChange={(e) => setModelA(e.target.value)}
                 disabled={isStreaming}
-                className="bg-velora-elevated border border-velora-border text-xs font-mono px-2.5 py-1 outline-none rounded-xs text-velora-text"
+                className="bg-velora-elevated border border-velora-border text-xs font-mono px-2.5 py-1 outline-none rounded-sm text-velora-text"
               >
                 {AVAILABLE_MODELS.map((m) => (
                   <option key={m.id} value={m.id}>
@@ -144,7 +144,7 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
                     }
                     if (!inline) return <CodeBlock value={codeString} />;
                     return (
-                      <code className="px-1 py-0.5 text-xs font-mono bg-velora-elevated text-velora-copperLight rounded-xs border border-velora-border">
+                      <code className="px-1.5 py-0.5 text-xs font-mono bg-velora-elevated text-velora-copperLight rounded-sm border border-velora-border">
                         {children}
                       </code>
                     );
@@ -164,7 +164,7 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
             <div className="pt-3.5 border-t border-velora-border mt-3 flex justify-end">
               <button
                 onClick={() => onAdoptWinner(modelA, responseA, prompt)}
-                className="flex items-center gap-2 px-3.5 py-1.5 text-xs font-mono bg-velora-copper hover:bg-velora-copperLight text-white rounded-xs transition-colors shadow-sm"
+                className="flex items-center gap-2 px-3.5 py-1.5 text-xs font-mono bg-velora-copper hover:bg-velora-copperLight text-white rounded-sm transition-colors shadow-sm"
               >
                 <span>Adopt Model A as Winner</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -184,7 +184,7 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
                 value={modelB}
                 onChange={(e) => setModelB(e.target.value)}
                 disabled={isStreaming}
-                className="bg-velora-elevated border border-velora-border text-xs font-mono px-2.5 py-1 outline-none rounded-xs text-velora-text"
+                className="bg-velora-elevated border border-velora-border text-xs font-mono px-2.5 py-1 outline-none rounded-sm text-velora-text"
               >
                 {AVAILABLE_MODELS.map((m) => (
                   <option key={m.id} value={m.id}>
@@ -215,7 +215,7 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
                     }
                     if (!inline) return <CodeBlock value={codeString} />;
                     return (
-                      <code className="px-1 py-0.5 text-xs font-mono bg-velora-elevated text-velora-copperLight rounded-xs border border-velora-border">
+                      <code className="px-1.5 py-0.5 text-xs font-mono bg-velora-elevated text-velora-copperLight rounded-sm border border-velora-border">
                         {children}
                       </code>
                     );
@@ -235,7 +235,7 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
             <div className="pt-3.5 border-t border-velora-border mt-3 flex justify-end">
               <button
                 onClick={() => onAdoptWinner(modelB, responseB, prompt)}
-                className="flex items-center gap-2 px-3.5 py-1.5 text-xs font-mono bg-velora-copper hover:bg-velora-copperLight text-white rounded-xs transition-colors shadow-sm"
+                className="flex items-center gap-2 px-3.5 py-1.5 text-xs font-mono bg-velora-copper hover:bg-velora-copperLight text-white rounded-sm transition-colors shadow-sm"
               >
                 <span>Adopt Model B as Winner</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -255,12 +255,12 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
             onKeyDown={(e) => e.key === 'Enter' && !isStreaming && handleRunDuel()}
             placeholder="Type a benchmark query to test both models simultaneously..."
             disabled={isStreaming}
-            className="flex-1 bg-velora-elevated border border-velora-border px-4 py-2.5 text-xs font-sans text-velora-text placeholder:text-velora-textMuted/50 outline-none rounded-xs focus:border-velora-copper"
+            className="flex-1 bg-velora-elevated border border-velora-border px-4 py-2.5 text-xs font-sans text-velora-text placeholder:text-velora-textMuted/50 outline-none rounded-sm focus:border-velora-copper"
           />
           <button
             onClick={handleRunDuel}
             disabled={isStreaming || !prompt.trim()}
-            className="flex items-center gap-2 px-4 py-2.5 bg-velora-copper hover:bg-velora-copperLight active:scale-[0.98] text-white text-xs font-mono font-medium rounded-xs disabled:opacity-40 transition-all shadow-sm whitespace-nowrap"
+            className="flex items-center gap-2 px-4 py-2.5 bg-velora-copper hover:bg-velora-copperLight active:scale-[0.98] text-white text-xs font-mono font-medium rounded-sm disabled:opacity-40 transition-all shadow-sm whitespace-nowrap"
           >
             <Swords className="w-3.5 h-3.5" />
             <span>{isStreaming ? 'Benchmarking...' : 'Dispatch Duel'}</span>
