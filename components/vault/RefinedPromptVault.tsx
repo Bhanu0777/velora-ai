@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { BookMarked, Plus, Search, Sparkles, X, ArrowRight, Layers } from 'lucide-react';
 import { PromptTemplate } from '@/lib/types';
+import { SpotlightCard } from '../ui/SpotlightCard';
+import { MagneticButton } from '../ui/MagneticButton';
 
 interface RefinedPromptVaultProps {
   isOpen: boolean;
@@ -93,12 +95,12 @@ export const RefinedPromptVault: React.FC<RefinedPromptVaultProps> = ({
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 animate-in fade-in-0 duration-200" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl bg-velora-surface border border-velora-border p-6 shadow-2xl rounded-xs z-50 animate-in fade-in-0 zoom-in-95 duration-200 max-h-[85vh] flex flex-col select-none">
+        <Dialog.Overlay className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 animate-in fade-in-0 duration-200" />
+        <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-3xl bg-[#14161A] border border-white/10 p-6 shadow-2xl rounded-2xl z-50 animate-in fade-in-0 zoom-in-95 duration-200 max-h-[85vh] flex flex-col select-none">
           {/* Header */}
-          <div className="flex items-center justify-between pb-4 border-b border-velora-border">
+          <div className="flex items-center justify-between pb-4 border-b border-white/[0.06]">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xs bg-velora-elevated border border-velora-border flex items-center justify-center text-velora-copper">
+              <div className="w-8 h-8 rounded-xl bg-white/[0.04] flex items-center justify-center text-velora-copper">
                 <BookMarked className="w-4 h-4" />
               </div>
               <div>
@@ -115,7 +117,7 @@ export const RefinedPromptVault: React.FC<RefinedPromptVaultProps> = ({
                   setIsCreatingNew(!isCreatingNew);
                   setFillingTemplate(null);
                 }}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono bg-velora-elevated hover:bg-velora-elevated/80 text-velora-text border border-velora-border rounded-xs transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-white/[0.04] hover:bg-white/[0.08] text-velora-text rounded-full transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>{isCreatingNew ? 'Browse Vault' : 'New Framework'}</span>
@@ -278,15 +280,15 @@ export const RefinedPromptVault: React.FC<RefinedPromptVaultProps> = ({
               /* Framework Directory */
               <div className="space-y-4">
                 {/* Search & Categories */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-2 border-b border-velora-border">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pb-2 border-b border-white/[0.06]">
                   <div className="relative flex-1">
-                    <Search className="w-3.5 h-3.5 text-velora-textMuted absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Search className="w-3.5 h-3.5 text-velora-textMuted/50 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search frameworks by title, description or prompt..."
-                      className="w-full bg-velora-elevated border border-velora-border pl-8 pr-3 py-1.5 text-xs font-sans rounded-xs outline-none focus:border-velora-copper text-velora-text"
+                      className="w-full bg-white/[0.03] border border-white/10 pl-8 pr-3 py-1.5 text-xs font-sans rounded-xl outline-none focus:border-velora-copper/50 text-velora-text placeholder:text-velora-textMuted/40"
                     />
                   </div>
 
@@ -295,10 +297,10 @@ export const RefinedPromptVault: React.FC<RefinedPromptVaultProps> = ({
                       <button
                         key={cat}
                         onClick={() => setSelectedCategory(cat)}
-                        className={`px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider rounded-xs transition-colors whitespace-nowrap ${
+                        className={`px-3 py-1 text-xs rounded-full transition-colors whitespace-nowrap ${
                           selectedCategory === cat
-                            ? 'bg-velora-text text-velora-bg font-semibold'
-                            : 'text-velora-textMuted hover:text-velora-text hover:bg-velora-elevated'
+                            ? 'bg-velora-copper text-white font-medium'
+                            : 'text-velora-textMuted hover:text-velora-text bg-white/[0.02] hover:bg-white/[0.06]'
                         }`}
                       >
                         {cat}
@@ -307,13 +309,13 @@ export const RefinedPromptVault: React.FC<RefinedPromptVaultProps> = ({
                   </div>
                 </div>
 
-                {/* Framework Grid */}
+                {/* Framework Grid with Spotlight Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
                   {filteredVault.map((item) => (
-                    <div
+                    <SpotlightCard
                       key={item.id}
                       onClick={() => handleStartFill(item)}
-                      className="p-4 bg-velora-elevated/40 hover:bg-velora-elevated border border-velora-border hover:border-velora-copper/60 transition-all rounded-xs cursor-pointer group flex flex-col justify-between"
+                      className="p-4 cursor-pointer group flex flex-col justify-between"
                     >
                       <div>
                         <div className="flex items-center justify-between text-[10px] font-mono uppercase mb-1.5">
@@ -321,7 +323,7 @@ export const RefinedPromptVault: React.FC<RefinedPromptVaultProps> = ({
                             {item.category}
                           </span>
                           {item.variables.length > 0 && (
-                            <span className="text-velora-textMuted">
+                            <span className="text-velora-textMuted/60">
                               {item.variables.length} slot{item.variables.length > 1 ? 's' : ''}
                             </span>
                           )}
@@ -332,25 +334,25 @@ export const RefinedPromptVault: React.FC<RefinedPromptVaultProps> = ({
                         </h4>
 
                         {item.description && (
-                          <p className="text-xs text-velora-textMuted mt-1 line-clamp-2 leading-relaxed">
+                          <p className="text-xs text-velora-textMuted/80 mt-1 line-clamp-2 leading-relaxed">
                             {item.description}
                           </p>
                         )}
                       </div>
 
-                      <div className="mt-3.5 pt-2 border-t border-velora-border/60 flex items-center justify-between text-[11px] font-mono text-velora-textMuted">
+                      <div className="mt-3.5 pt-2 border-t border-white/[0.06] flex items-center justify-between text-[11px] font-mono text-velora-textMuted/60">
                         <span className="truncate max-w-[200px] text-[10px]">
                           {item.prompt.slice(0, 36)}...
                         </span>
-                        <span className="text-velora-copper font-medium group-hover:translate-x-0.5 transition-transform">
+                        <span className="text-velora-copper font-medium group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
                           Deploy ↵
                         </span>
                       </div>
-                    </div>
+                    </SpotlightCard>
                   ))}
 
                   {filteredVault.length === 0 && (
-                    <div className="col-span-2 py-12 text-center text-velora-textMuted font-serif text-sm">
+                    <div className="col-span-2 py-12 text-center text-velora-textMuted/50 font-serif text-sm">
                       No frameworks matched your filter criteria.
                     </div>
                   )}

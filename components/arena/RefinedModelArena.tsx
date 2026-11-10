@@ -5,6 +5,7 @@ import { ArrowRight, Check, ChevronDown, Copy, Swords, Zap, X } from 'lucide-rea
 import { AVAILABLE_MODELS, streamPuterChat } from '@/lib/puter/ai';
 import { CodeBlock } from '../chat/CodeBlock';
 import { animateArenaReveal } from '@/lib/gsap/gsap-interactions';
+import { MagneticButton } from '../ui/MagneticButton';
 
 interface RefinedModelArenaProps {
   onAdoptWinner: (modelId: string, content: string, prompt: string) => void;
@@ -73,16 +74,16 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
   return (
     <div className="flex flex-col h-full bg-velora-bg overflow-hidden select-none">
       {/* Arena Header */}
-      <div className="flex items-center justify-between px-6 py-3.5 border-b border-velora-border bg-velora-surface">
+      <div className="flex items-center justify-between px-6 py-3.5 border-b border-white/[0.05] bg-[#0A0B0E]">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 flex items-center justify-center bg-velora-elevated text-velora-copper border border-velora-border rounded-sm">
+          <div className="w-8 h-8 flex items-center justify-center bg-white/[0.04] text-velora-copper rounded-xl">
             <Swords className="w-4 h-4" />
           </div>
           <div>
             <h2 className="font-serif text-lg text-velora-text tracking-tight flex items-center gap-2">
               Model Arena
-              <span className="text-[10px] font-mono px-2 py-0.5 bg-velora-copper/10 text-velora-copper border border-velora-copper/30 rounded-sm">
-                Synchronous Benchmark
+              <span className="text-[10px] font-mono px-2 py-0.5 bg-velora-copper/10 text-velora-copper rounded-full">
+                Benchmark
               </span>
             </h2>
             <p className="text-xs text-velora-textMuted font-sans">
@@ -93,7 +94,7 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
 
         <button
           onClick={onClose}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono text-velora-textMuted hover:text-velora-text hover:bg-velora-elevated border border-velora-border rounded-sm transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-velora-textMuted hover:text-velora-text bg-white/[0.03] hover:bg-white/[0.06] rounded-full transition-colors"
         >
           <X className="w-3.5 h-3.5" />
           <span>Exit Arena</span>
@@ -101,10 +102,10 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
       </div>
 
       {/* Dual Split Panels */}
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-velora-border overflow-y-auto">
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-white/[0.05] overflow-y-auto">
         {/* Model A Viewport */}
-        <div ref={leftPanelRef} className="flex flex-col h-full p-5 md:p-7 bg-velora-surface/30">
-          <div className="flex items-center justify-between pb-3.5 border-b border-velora-border mb-4">
+        <div ref={leftPanelRef} className="flex flex-col h-full p-5 md:p-7 bg-[#090A0C]">
+          <div className="flex items-center justify-between pb-3.5 border-b border-white/[0.05] mb-4">
             <div className="flex items-center gap-2">
               <span className="text-xs font-mono uppercase font-bold text-velora-copper">
                 Model A:
@@ -113,10 +114,10 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
                 value={modelA}
                 onChange={(e) => setModelA(e.target.value)}
                 disabled={isStreaming}
-                className="bg-velora-elevated border border-velora-border text-xs font-mono px-2.5 py-1 outline-none rounded-sm text-velora-text"
+                className="bg-white/[0.04] border border-white/10 text-xs font-sans px-3 py-1 outline-none rounded-full text-velora-text"
               >
                 {AVAILABLE_MODELS.map((m) => (
-                  <option key={m.id} value={m.id}>
+                  <option key={m.id} value={m.id} className="bg-[#14161A] text-white">
                     {m.name} ({m.provider})
                   </option>
                 ))}
@@ -131,7 +132,7 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
             )}
           </div>
 
-          <div className="flex-1 overflow-y-auto prose prose-neutral dark:prose-invert max-w-none text-[14px] leading-relaxed font-sans min-h-[240px] select-text">
+          <div className="flex-1 overflow-y-auto prose prose-neutral dark:prose-invert max-w-none text-[14.5px] leading-relaxed font-sans min-h-[240px] select-text">
             {responseA ? (
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
@@ -144,7 +145,7 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
                     }
                     if (!inline) return <CodeBlock value={codeString} />;
                     return (
-                      <code className="px-1.5 py-0.5 text-xs font-mono bg-velora-elevated text-velora-copperLight rounded-sm border border-velora-border">
+                      <code className="px-1.5 py-0.5 text-xs font-mono bg-white/[0.06] text-velora-copperLight rounded-md">
                         {children}
                       </code>
                     );
@@ -161,12 +162,12 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
           </div>
 
           {responseA && !isStreaming && (
-            <div className="pt-3.5 border-t border-velora-border mt-3 flex justify-end">
+            <div className="pt-3.5 border-t border-white/[0.05] mt-3 flex justify-end">
               <button
                 onClick={() => onAdoptWinner(modelA, responseA, prompt)}
-                className="flex items-center gap-2 px-3.5 py-1.5 text-xs font-mono bg-velora-copper hover:bg-velora-copperLight text-white rounded-sm transition-colors shadow-sm"
+                className="flex items-center gap-2 px-4 py-1.5 text-xs font-medium bg-velora-copper hover:bg-velora-copperLight text-white rounded-full transition-all shadow-sm active:scale-95"
               >
-                <span>Adopt Model A as Winner</span>
+                <span>Adopt Model A</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -174,8 +175,8 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
         </div>
 
         {/* Model B Viewport */}
-        <div ref={rightPanelRef} className="flex flex-col h-full p-5 md:p-7 bg-velora-surface/30">
-          <div className="flex items-center justify-between pb-3.5 border-b border-velora-border mb-4">
+        <div ref={rightPanelRef} className="flex flex-col h-full p-5 md:p-7 bg-[#090A0C]">
+          <div className="flex items-center justify-between pb-3.5 border-b border-white/[0.05] mb-4">
             <div className="flex items-center gap-2">
               <span className="text-xs font-mono uppercase font-bold text-velora-copper">
                 Model B:
@@ -184,10 +185,10 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
                 value={modelB}
                 onChange={(e) => setModelB(e.target.value)}
                 disabled={isStreaming}
-                className="bg-velora-elevated border border-velora-border text-xs font-mono px-2.5 py-1 outline-none rounded-sm text-velora-text"
+                className="bg-white/[0.04] border border-white/10 text-xs font-sans px-3 py-1 outline-none rounded-full text-velora-text"
               >
                 {AVAILABLE_MODELS.map((m) => (
-                  <option key={m.id} value={m.id}>
+                  <option key={m.id} value={m.id} className="bg-[#14161A] text-white">
                     {m.name} ({m.provider})
                   </option>
                 ))}
@@ -202,7 +203,7 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
             )}
           </div>
 
-          <div className="flex-1 overflow-y-auto prose prose-neutral dark:prose-invert max-w-none text-[14px] leading-relaxed font-sans min-h-[240px] select-text">
+          <div className="flex-1 overflow-y-auto prose prose-neutral dark:prose-invert max-w-none text-[14.5px] leading-relaxed font-sans min-h-[240px] select-text">
             {responseB ? (
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
@@ -215,7 +216,7 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
                     }
                     if (!inline) return <CodeBlock value={codeString} />;
                     return (
-                      <code className="px-1.5 py-0.5 text-xs font-mono bg-velora-elevated text-velora-copperLight rounded-sm border border-velora-border">
+                      <code className="px-1.5 py-0.5 text-xs font-mono bg-white/[0.06] text-velora-copperLight rounded-md">
                         {children}
                       </code>
                     );
@@ -232,12 +233,12 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
           </div>
 
           {responseB && !isStreaming && (
-            <div className="pt-3.5 border-t border-velora-border mt-3 flex justify-end">
+            <div className="pt-3.5 border-t border-white/[0.05] mt-3 flex justify-end">
               <button
                 onClick={() => onAdoptWinner(modelB, responseB, prompt)}
-                className="flex items-center gap-2 px-3.5 py-1.5 text-xs font-mono bg-velora-copper hover:bg-velora-copperLight text-white rounded-sm transition-colors shadow-sm"
+                className="flex items-center gap-2 px-4 py-1.5 text-xs font-medium bg-velora-copper hover:bg-velora-copperLight text-white rounded-full transition-all shadow-sm active:scale-95"
               >
-                <span>Adopt Model B as Winner</span>
+                <span>Adopt Model B</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -246,7 +247,7 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
       </div>
 
       {/* Unified Benchmark Command Bar */}
-      <div className="p-4 border-t border-velora-border bg-velora-surface">
+      <div className="p-4 border-t border-white/[0.05] bg-[#0A0B0E]">
         <div className="max-w-4xl mx-auto flex items-center gap-3">
           <input
             type="text"
@@ -255,16 +256,17 @@ export const RefinedModelArena: React.FC<RefinedModelArenaProps> = ({ onAdoptWin
             onKeyDown={(e) => e.key === 'Enter' && !isStreaming && handleRunDuel()}
             placeholder="Type a benchmark query to test both models simultaneously..."
             disabled={isStreaming}
-            className="flex-1 bg-velora-elevated border border-velora-border px-4 py-2.5 text-xs font-sans text-velora-text placeholder:text-velora-textMuted/50 outline-none rounded-sm focus:border-velora-copper"
+            className="flex-1 bg-white/[0.03] border border-white/10 px-4 py-2.5 text-xs font-sans text-velora-text placeholder:text-velora-textMuted/40 outline-none rounded-xl focus:border-velora-copper/50"
           />
-          <button
+          <MagneticButton
+            type="button"
             onClick={handleRunDuel}
             disabled={isStreaming || !prompt.trim()}
-            className="flex items-center gap-2 px-4 py-2.5 bg-velora-copper hover:bg-velora-copperLight active:scale-[0.98] text-white text-xs font-mono font-medium rounded-sm disabled:opacity-40 transition-all shadow-sm whitespace-nowrap"
+            className="flex items-center gap-2 px-5 py-2.5 bg-velora-copper hover:bg-velora-copperLight active:scale-[0.98] text-white text-xs font-medium rounded-full disabled:opacity-30 transition-all shadow-sm whitespace-nowrap"
           >
             <Swords className="w-3.5 h-3.5" />
             <span>{isStreaming ? 'Benchmarking...' : 'Dispatch Duel'}</span>
-          </button>
+          </MagneticButton>
         </div>
       </div>
     </div>

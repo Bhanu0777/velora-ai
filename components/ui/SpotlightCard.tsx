@@ -50,3 +50,4 @@ export const SpotlightCard: React.FC<GlowCardProps> = ({
     </div>
   );
 };
+
