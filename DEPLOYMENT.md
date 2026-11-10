@@ -70,3 +70,4 @@ As specified in the launch requirements, follow these steps to connect your cust
 - [x] Mobile responsiveness and safe area insets tested.
 - [x] PWA installability confirmed (`/manifest.webmanifest`, `/sw.js`).
 - [x] Puter.js client initialized and ready for user authentication & cloud KV sync.
+

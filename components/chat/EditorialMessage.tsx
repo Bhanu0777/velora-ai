@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Bookmark, Check, Copy, GitBranch, Quote, Sparkles } from 'lucide-react';
+import { Bookmark, Check, Copy, GitBranch, MoreHorizontal } from 'lucide-react';
 import { MessageNode, AnswerControlAction } from '@/lib/types';
 import { CodeBlock } from './CodeBlock';
 import { BranchConnectorHUD } from './BranchConnectorHUD';
@@ -63,62 +63,86 @@ export const EditorialMessage: React.FC<EditorialMessageProps> = ({
   return (
     <div
       ref={containerRef}
-      className={`relative py-8 px-4 sm:px-8 border-b border-velora-border/60 transition-colors ${
-        isUser
-          ? 'bg-velora-surface/30'
-          : 'bg-transparent'
+      className={`group relative py-6 px-4 sm:px-8 border-b border-velora-border/30 transition-colors ${
+        isUser ? 'bg-velora-surface/25' : 'bg-transparent'
       }`}
     >
-      <div className="max-w-4xl mx-auto">
-        {/* Turn Metadata Header */}
-        <div className="flex items-center justify-between pb-3.5 mb-3 select-none">
-          <div className="flex items-center gap-3">
+      <div className="max-w-3xl mx-auto">
+        {/* Header row: Speaker & Actions */}
+        <div className="flex items-center justify-between pb-2 mb-2 text-xs font-mono select-none">
+          <div className="flex items-center gap-2">
             {isUser ? (
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-[9px] uppercase tracking-widest font-bold px-2 py-0.5 bg-velora-elevated text-velora-sage border border-velora-border rounded-xs">
-                  Inquiry
-                </span>
-                <span className="text-velora-textMuted/60 text-[10px] font-mono">
-                  {new Date(node.createdAt).toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </span>
-              </div>
+              <span className="text-[11px] font-semibold tracking-wider uppercase text-velora-textMuted">
+                You
+              </span>
             ) : (
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 bg-velora-elevated text-velora-copperLight border border-velora-border rounded-xs flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 bg-velora-copper inline-block" />
-                  {node.model || 'Model Reflection'}
-                </span>
-                <span className="text-velora-textMuted/60 text-[10px] font-mono">
-                  {new Date(node.createdAt).toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 bg-velora-copper inline-block rounded-full" />
+                <span className="text-[11px] font-semibold tracking-wide text-velora-text">
+                  {node.model || 'Model'}
                 </span>
               </div>
             )}
+
+            <span className="text-velora-textMuted/40 text-[10px]">
+              {new Date(node.createdAt).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </span>
           </div>
 
-          {/* Sibling Branch Indicator (if more than 1 sibling) */}
-          <BranchConnectorHUD
-            currentIndex={siblingInfo.currentIndex}
-            total={siblingInfo.total}
-            onNavigate={handleBranchNavigation}
-          />
+          <div className="flex items-center gap-2">
+            {/* Sibling Branch Indicator (if more than 1 fork) */}
+            <BranchConnectorHUD
+              currentIndex={siblingInfo.currentIndex}
+              total={siblingInfo.total}
+              onNavigate={handleBranchNavigation}
+            />
+
+            {/* Quick Actions (Copy, Bookmark, Fork) */}
+            <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                onClick={handleCopy}
+                className="p-1 text-velora-textMuted hover:text-velora-text hover:bg-velora-surface rounded-sm transition-colors"
+                title="Copy text"
+              >
+                {copied ? <Check className="w-3.5 h-3.5 text-velora-sage" /> : <Copy className="w-3.5 h-3.5" />}
+              </button>
+
+              {!isUser && (
+                <button
+                  onClick={() => setIsNoteModalOpen(true)}
+                  className={`p-1 rounded-sm transition-colors ${
+                    isBookmarked
+                      ? 'text-velora-copper bg-velora-copper/10'
+                      : 'text-velora-textMuted hover:text-velora-text hover:bg-velora-surface'
+                  }`}
+                  title={isBookmarked ? 'Edit bookmark note' : 'Bookmark response'}
+                >
+                  <Bookmark className={`w-3.5 h-3.5 ${isBookmarked ? 'fill-velora-copper' : ''}`} />
+                </button>
+              )}
+
+              <button
+                onClick={() => onForkTurn(node.id)}
+                className="p-1 text-velora-textMuted hover:text-velora-copper hover:bg-velora-surface rounded-sm transition-colors"
+                title="Fork alternative branch from here"
+              >
+                <GitBranch className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* Message Content Body */}
+        {/* Message Content */}
         <div className="text-[15px] leading-[1.8] font-sans text-velora-text selection:bg-velora-copper selection:text-white">
           {isUser ? (
-            <div className="relative pl-4 border-l-2 border-velora-copper/70 py-1">
-              <p className="whitespace-pre-wrap font-serif text-[17px] leading-relaxed text-velora-text">
-                {node.content}
-              </p>
-            </div>
+            <p className="whitespace-pre-wrap font-medium text-velora-text text-[15.5px]">
+              {node.content}
+            </p>
           ) : (
-            <div className="prose prose-neutral dark:prose-invert max-w-none text-[15px] leading-[1.85] font-sans">
+            <div className="prose prose-neutral dark:prose-invert max-w-none text-[15px] leading-[1.8] font-sans">
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 components={{
@@ -133,7 +157,7 @@ export const EditorialMessage: React.FC<EditorialMessageProps> = ({
                     }
                     return (
                       <code
-                        className="px-1.5 py-0.5 mx-0.5 text-xs font-mono bg-velora-elevated text-velora-copperLight rounded-xs border border-velora-border"
+                        className="px-1.5 py-0.5 mx-0.5 text-xs font-mono bg-velora-surface text-velora-copperLight rounded-sm border border-velora-border/60"
                         {...props}
                       >
                         {children}
@@ -142,74 +166,24 @@ export const EditorialMessage: React.FC<EditorialMessageProps> = ({
                   },
                 }}
               >
-                {node.content || (isStreaming ? 'Synthesizing response...' : '')}
+                {node.content || (isStreaming ? 'Thinking...' : '')}
               </ReactMarkdown>
 
               {isStreaming && (
-                <span className="inline-block w-2 h-4 ml-1.5 bg-velora-copper animate-pulse align-middle" />
+                <span className="inline-block w-1.5 h-3.5 ml-1 bg-velora-copper animate-pulse align-middle" />
               )}
             </div>
           )}
         </div>
 
-        {/* Turn Utility Bar */}
-        <div className="flex items-center justify-between pt-4 mt-3 text-[11px] font-mono text-velora-textMuted border-t border-velora-border/40 select-none">
-          <div className="flex items-center gap-2">
-            {/* Copy button */}
-            <button
-              onClick={handleCopy}
-              className="inline-flex items-center gap-1.5 px-2 py-1 hover:text-velora-text hover:bg-velora-elevated rounded-xs transition-colors"
-              title="Copy message text"
-            >
-              {copied ? (
-                <>
-                  <Check className="w-3.5 h-3.5 text-velora-sage" />
-                  <span className="text-velora-sage font-medium">Copied</span>
-                </>
-              ) : (
-                <>
-                  <Copy className="w-3.5 h-3.5" />
-                  <span>Copy</span>
-                </>
-              )}
-            </button>
-
-            {/* Bookmark button (assistant only) */}
-            {!isUser && (
-              <button
-                onClick={() => setIsNoteModalOpen(true)}
-                className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-xs transition-colors ${
-                  isBookmarked
-                    ? 'text-velora-copper bg-velora-copper/10 border border-velora-copper/30 font-medium'
-                    : 'hover:text-velora-text hover:bg-velora-elevated'
-                }`}
-                title={isBookmarked ? 'Edit bookmark annotation' : 'Bookmark reflection'}
-              >
-                <Bookmark className="w-3.5 h-3.5" />
-                <span>{isBookmarked ? 'Bookmarked' : 'Bookmark'}</span>
-              </button>
-            )}
-
-            {/* Fork Branch from here */}
-            <button
-              onClick={() => onForkTurn(node.id)}
-              className="inline-flex items-center gap-1.5 px-2 py-1 hover:text-velora-copper hover:bg-velora-elevated rounded-xs transition-colors"
-              title="Fork alternative analytical branch from this turn"
-            >
-              <GitBranch className="w-3.5 h-3.5 text-velora-copper" />
-              <span>Fork Branch</span>
-            </button>
+        {/* Bookmarked note annotation preview if present */}
+        {!isUser && isBookmarked && bookmarkNote && (
+          <div className="mt-2 text-xs text-velora-copper/80 italic font-serif pl-3 border-l-2 border-velora-copper/40">
+            Note: "{bookmarkNote}"
           </div>
+        )}
 
-          {/* Bookmarked user note preview */}
-          {!isUser && isBookmarked && bookmarkNote && (
-            <div className="text-[11px] text-velora-copper/90 italic truncate max-w-sm font-serif pl-3 border-l border-velora-border">
-              Note: "{bookmarkNote}"
-            </div>
-          )}
-        </div>
-
-        {/* Editorial Answer Controls (Assistant turns, when not actively streaming) */}
+        {/* Minimal Answer Controls (Assistant turns, when not actively streaming) */}
         {!isUser && !isStreaming && node.content && (
           <RefinedAnswerControls onSelectAction={onAnswerControl} />
         )}

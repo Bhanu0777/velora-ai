@@ -4,66 +4,53 @@
 
 @layer base {
   :root {
-    /* Refined Editorial Light Theme */
-    --background: #F7F5F0;
-    --foreground: #191C17;
-    --surface: #EFECE4;
-    --surface-elevated: #E5E1D6;
-    --primary: #191C17;
-    --primary-foreground: #F7F5F0;
-    --muted: #E8E5DD;
-    --muted-foreground: #60645A;
-    --border: #D7D3C7;
-    --input: #D7D3C7;
-    --ring: #A65F38;
-    --accent: #A65F38;
-    --secondary-accent: #697A59;
+    /* Pristine Editorial Light Theme */
+    --background: #FBFBFA;
+    --foreground: #141517;
+    --surface: #F2F1ED;
+    --surface-elevated: #E9E7E1;
+    --primary: #141517;
+    --primary-foreground: #FBFBFA;
+    --muted: #EFECE6;
+    --muted-foreground: #70737D;
+    --border: #E2DFD7;
+    --input: #E2DFD7;
+    --ring: #B87346;
+    --accent: #B87346;
+    --secondary-accent: #6C7D5D;
   }
 
   .dark {
-    /* VELORA Deep Charcoal & Copper Theme */
-    --background: #111310;
-    --foreground: #F1EFE6;
-    --surface: #1B1E19;
-    --surface-elevated: #252922;
-    --primary: #F1EFE6;
-    --primary-foreground: #111310;
-    --muted: #1B1E19;
-    --muted-foreground: #A6A79D;
-    --border: #343830;
-    --input: #343830;
-    --ring: #C17B54;
-    --accent: #C17B54;
-    --secondary-accent: #9BA88A;
+    /* Pristine Luxury Obsidian & Copper */
+    --background: #090A0C;
+    --foreground: #EDEDED;
+    --surface: #111316;
+    --surface-elevated: #181A1F;
+    --primary: #EDEDED;
+    --primary-foreground: #090A0C;
+    --muted: #15171B;
+    --muted-foreground: #8C9099;
+    --border: #22252B;
+    --input: #22252B;
+    --ring: #C98A5E;
+    --accent: #C98A5E;
+    --secondary-accent: #8E9F7E;
   }
 }
 
 body {
   color: var(--foreground);
   background-color: var(--background);
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11", "rlig" 1, "calt" 1;
+  font-feature-settings: "rlig" 1, "calt" 1;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Subtle Architectural Dot Matrix Background */
-.editorial-canvas-bg {
-  background-color: #111310;
-  background-image: radial-gradient(rgba(52, 56, 48, 0.45) 1px, transparent 1px);
-  background-size: 28px 28px;
-}
-
-.light .editorial-canvas-bg {
-  background-color: #F7F5F0;
-  background-image: radial-gradient(rgba(215, 211, 199, 0.6) 1px, transparent 1px);
-  background-size: 28px 28px;
-}
-
-/* Subtle Architectural Scrollbar */
+/* Pristine Clean Scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
@@ -71,47 +58,48 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(166, 167, 157, 0.18);
-  border-radius: 2px;
+  background: rgba(140, 144, 153, 0.15);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(193, 123, 84, 0.45);
+  background: rgba(201, 138, 94, 0.4);
 }
 
-/* Code Syntax Highlighting — Editorial Deep Theme */
+/* Code Syntax Highlighting — Clean Obsidian */
 pre {
-  background-color: #161814 !important;
-  color: #F1EFE6 !important;
-  border: 1px solid #343830 !important;
+  background-color: #0E1013 !important;
+  color: #E6E8EB !important;
+  border: 1px solid #22252B !important;
+  border-radius: 6px !important;
 }
 
 code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 .hljs-keyword, .hljs-selector-tag {
-  color: #C17B54;
-  font-weight: 600;
+  color: #C98A5E;
+  font-weight: 500;
 }
 
 .hljs-string, .hljs-title {
-  color: #9BA88A;
+  color: #8E9F7E;
 }
 
 .hljs-comment {
-  color: #60645A;
+  color: #555A64;
   font-style: italic;
 }
 
 .hljs-number, .hljs-literal {
-  color: #D6936E;
+  color: #DDA784;
 }
 
 .hljs-function, .hljs-attr {
-  color: #C4CFA1;
+  color: #9DB4C0;
 }
 
 .hljs-variable, .hljs-params {
-  color: #E29B72;
+  color: #E2A182;
 }

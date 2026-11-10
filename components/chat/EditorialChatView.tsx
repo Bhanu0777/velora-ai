@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { BookMarked, GitBranch, Sparkles, Swords, ArrowRight } from 'lucide-react';
+import { BookMarked, Swords, ArrowRight } from 'lucide-react';
 import { ConversationTree, AnswerControlAction } from '@/lib/types';
 import { EditorialMessage } from './EditorialMessage';
 import { getLinearPath, getBranchSiblingInfo } from '@/lib/storage/tree-manager';
@@ -19,24 +19,21 @@ interface EditorialChatViewProps {
   onOpenLanding: () => void;
 }
 
-const CURATED_FRAMEWORKS = [
+const STARTER_PROMPTS = [
   {
-    category: 'Strategy',
-    title: 'First-Principles Deconstruction',
+    category: 'Analysis',
+    title: 'First-principles deconstruction',
     prompt: 'Deconstruct modern distributed consensus algorithms from physical and mathematical first principles. What underlying invariants govern Raft vs Paxos vs BFT?',
-    tag: 'Core Physics',
   },
   {
     category: 'Architecture',
-    title: 'Zero-Trust Architectural Audit',
-    prompt: 'Conduct an adversarial failure mode analysis for an event-driven CQRS pipeline under high concurrency and network partitions. Identify silent data corruption vectors.',
-    tag: 'Systems Audit',
+    title: 'Failure mode stress-test',
+    prompt: 'Conduct an adversarial failure mode analysis for an event-driven CQRS pipeline under high concurrency and network partitions.',
   },
   {
-    category: 'Analysis',
-    title: 'Socratic Hypothesis Stress-Test',
-    prompt: 'Act as an adversarial principal partner. Stress-test the thesis that vertical AI agents will commoditize horizontal foundation model providers over a 3-year horizon.',
-    tag: 'Adversarial',
+    category: 'Strategy',
+    title: 'Socratic business critique',
+    prompt: 'Act as an adversarial partner. Stress-test the thesis that vertical AI agents will commoditize horizontal foundation model providers over a 3-year horizon.',
   },
 ];
 
@@ -65,76 +62,59 @@ export const EditorialChatView: React.FC<EditorialChatViewProps> = ({
   if (!conversation || Object.keys(conversation.nodes).length === 0) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-6 md:p-12 text-center select-none overflow-y-auto">
-        <div className="max-w-2xl mx-auto space-y-8">
-          {/* Tagline & Identity */}
-          <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-velora-surface border border-velora-border text-velora-copper text-[10px] font-mono uppercase tracking-widest rounded-xs">
-              <span className="w-1.5 h-1.5 bg-velora-copper" />
-              Editorial Intelligence
-            </div>
-            
-            <h1 className="font-serif text-4xl sm:text-5xl font-bold tracking-tight text-velora-text leading-[1.15]">
+        <div className="max-w-xl mx-auto space-y-7">
+          {/* Identity */}
+          <div className="space-y-2.5">
+            <h1 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-velora-text">
               Think beyond the first answer.
             </h1>
-            
-            <p className="text-sm sm:text-base text-velora-textMuted font-sans max-w-lg mx-auto leading-relaxed">
-              A high-precision AI workspace engineered for deep inquiry. Fork alternative conversation branches, benchmark dual models in the Arena, and curate analytical frameworks.
+            <p className="text-sm text-velora-textMuted max-w-md mx-auto leading-relaxed">
+              Explore alternative paths with Conversation Branching, compare reasoning in Model Arena, and refine answers with precision.
             </p>
           </div>
 
-          {/* Quick Capability Actions */}
-          <div className="flex flex-wrap items-center justify-center gap-3">
+          {/* Action Pills */}
+          <div className="flex items-center justify-center gap-2">
             <button
               onClick={onOpenArena}
-              className="inline-flex items-center gap-2 px-3.5 py-2 bg-velora-surface hover:bg-velora-elevated text-xs font-mono text-velora-text border border-velora-border hover:border-velora-copper/60 rounded-xs transition-all shadow-sm"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-velora-surface hover:bg-velora-elevated text-xs font-mono text-velora-text border border-velora-border rounded-sm transition-colors"
             >
               <Swords className="w-3.5 h-3.5 text-velora-copper" />
-              <span>Model Arena Duel</span>
+              <span>Model Arena</span>
             </button>
 
             <button
               onClick={onOpenVault}
-              className="inline-flex items-center gap-2 px-3.5 py-2 bg-velora-surface hover:bg-velora-elevated text-xs font-mono text-velora-text border border-velora-border hover:border-velora-copper/60 rounded-xs transition-all shadow-sm"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-velora-surface hover:bg-velora-elevated text-xs font-mono text-velora-text border border-velora-border rounded-sm transition-colors"
             >
               <BookMarked className="w-3.5 h-3.5 text-velora-copper" />
               <span>Prompt Vault</span>
             </button>
-
-            <button
-              onClick={onOpenLanding}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-mono text-velora-textMuted hover:text-velora-text hover:underline transition-colors"
-            >
-              <span>Explore Manifesto</span>
-              <ArrowRight className="w-3 h-3" />
-            </button>
           </div>
 
-          {/* Curated Prompt Starters */}
-          <div className="space-y-3 pt-2 text-left">
-            <div className="text-[10px] font-mono uppercase tracking-widest text-velora-textMuted/70 pl-1 flex items-center justify-between">
-              <span>Select an Initial Invariant or Framework</span>
-              <span className="text-[9px] text-velora-sage">Click to dispatch</span>
+          {/* Clean Starter Prompts */}
+          <div className="space-y-2 pt-2 text-left">
+            <div className="text-[10px] font-mono uppercase tracking-widest text-velora-textMuted/50 pl-1">
+              Example inquiries:
             </div>
 
-            <div className="grid grid-cols-1 gap-2.5">
-              {CURATED_FRAMEWORKS.map((item, idx) => (
+            <div className="space-y-1.5">
+              {STARTER_PROMPTS.map((item, idx) => (
                 <div
                   key={idx}
                   onClick={() => onSelectPromptStarter(item.prompt)}
-                  className="p-4 bg-velora-surface hover:bg-velora-elevated border border-velora-border hover:border-velora-copper/50 rounded-xs transition-all cursor-pointer group shadow-sm"
+                  className="p-3 bg-velora-surface/60 hover:bg-velora-surface border border-velora-border/70 hover:border-velora-copper/40 rounded-sm transition-all cursor-pointer group"
                 >
-                  <div className="flex items-center justify-between text-[10px] font-mono uppercase mb-1.5">
-                    <span className="text-velora-copper font-medium">{item.category}</span>
-                    <span className="text-velora-textMuted/60 group-hover:text-velora-sage transition-colors">
-                      {item.tag} ↵
-                    </span>
+                  <div className="flex items-center justify-between text-[10px] font-mono text-velora-copper mb-0.5">
+                    <span>{item.category}</span>
+                    <span className="text-velora-textMuted/40 group-hover:text-velora-textMuted transition-colors">↵</span>
                   </div>
-                  <h4 className="text-xs font-semibold text-velora-text mb-1 group-hover:text-velora-copperLight transition-colors">
+                  <div className="text-xs font-medium text-velora-text group-hover:text-velora-copperLight transition-colors">
                     {item.title}
-                  </h4>
-                  <p className="text-[12.5px] text-velora-textMuted leading-relaxed line-clamp-2">
+                  </div>
+                  <div className="text-[12px] text-velora-textMuted/70 line-clamp-1 mt-0.5 font-sans">
                     {item.prompt}
-                  </p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -147,7 +127,7 @@ export const EditorialChatView: React.FC<EditorialChatViewProps> = ({
   const linearNodes = getLinearPath(conversation);
 
   return (
-    <div className="flex-1 overflow-y-auto editorial-canvas-bg">
+    <div className="flex-1 overflow-y-auto">
       <div className="min-h-full flex flex-col justify-between">
         <div>
           {linearNodes.map((node) => {
@@ -174,9 +154,8 @@ export const EditorialChatView: React.FC<EditorialChatViewProps> = ({
             );
           })}
         </div>
-        <div ref={bottomRef} className="h-8" />
+        <div ref={bottomRef} className="h-6" />
       </div>
     </div>
   );
 };
-
